@@ -227,14 +227,15 @@ board.find_valid_moves=function(){
         
 }
 
-
+board.initialize(starting_position);
+/*
 board.initialize(starting_position);
 
 for(var i=1;i<2;i++){
 board.move_random();
 board.print();
 board.status();
-}
+}*/
 
 
 
