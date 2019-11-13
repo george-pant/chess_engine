@@ -13,7 +13,11 @@
 .chessboard .square.target
 {
    background-color: lightblue;
+   -moz-box-shadow:    inset 0 0 1px #000000;
+   -webkit-box-shadow: inset 0 0 1px #000000;
+   box-shadow:         inset 0 0 1px #000000;
 }
+
 
 .chessboard .square.target:hover{
     filter: brightness(75%);

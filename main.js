@@ -1,5 +1,4 @@
 
-
 var squares = [];
 
 var piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
@@ -8,30 +7,12 @@ var piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
 var directions  = [];
 directions["P"] = [[-10,-20],[-9],[-11]];
 directions["p"] = [[10,20],[9],[11]];
-directions["B"] = directions["b"] = [[-11,-22,-33,-44,-55,-66,-77],[-9],[11,22,33,44,55,66,77],[9]];
+directions["B"] = directions["b"] = [[-11,-22,-33,-44,-55,-66,-77],[-9,-18,-27,-36,-45,-54,-63],[11,22,33,44,55,66,77],[9,18,27,36,45,54,63]];
 directions["R"] = directions["r"] = [[-1,-2,-3,-4,-5,-6,-7],[-10,-20,-30,-40,-50,-60,-70],[1,2,3,4,5,6,7],[10,20,30,40,50,60,70] ];
 directions["N"] = directions["n"] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]];
-directions["Q"] = directions["q"] = [[-11],[-10],[-9],[-1,-2,-3,-4,-5,-6,-7],[1,2,3,4,5,6,7],[9],[10],[11]];
-directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1],[1],[9],[10],[11]];
+directions["Q"] = directions["q"] = directions["r"].concat(directions["b"]);
+directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1,-2],[1],[9],[10],[11],[1,2]];
 
-
-
-//create arrays with possible moves for each piece
-/*
-for (let key in pieces){
-
-    if(key=='B' || key=='R' || key=='Q'){
-
-        for (let i=2;i<8;i++){
-            
-            for(let j=0,l=pieces[key].length; j<l; j++) {
-
-                pieces[key].push(pieces[key][j]*i);
-
-            }
-        }
-    }
-}*/
 
 // map our array indexes to chess board squares Ue.g a1->21,a2->31,...
 
@@ -62,11 +43,14 @@ var starting_position=[
 
 var board = {};
 
-board.moving_player=0   //0 for white moves 1 for black
-board.moves=[];         //game moves
-board.valid_moves=[];   //possible valid moves
+board.moving_player=0                   //0 for white player 1 for black
+board.moves=[];                         //game moves
+board.valid_moves=[];                   //possible valid moves
 board.position=[];
 board.history=[];
+board.castling_rights=[];
+board.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
+board.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
 
 board.initialize=function(pos){
     this.position=pos;
@@ -104,12 +88,49 @@ board.move=function(from,to){
 
     if(this.valid_moves[this.moving_player][from].includes(to)){
     
-    this.history.push(this.position);
+    this.history.push(this.position);               //keep the current position in history
+
+    //make the move in board
     this.position[to]=this.position[from];
     this.position[from]=0;
-    this.moves.push([from,to]);
-    this.moving_player= 1 - this.moving_player;
-    this.find_valid_moves();
+    
+    if(from===24 && to===22 && board.castling_rights[0][0]===true){
+        this.position[23]='r';
+        this.position[21]=0;
+    }
+
+    if(from===24 && to===26 && board.castling_rights[0][0]===true){
+        this.position[25]='r';
+        this.position[28]=0;
+    }
+
+    if(from===94 && to===92 && board.castling_rights[1][0]===true){
+        this.position[93]='R';
+        this.position[91]=0;
+    }
+
+    if(from===94 && to===96 && board.castling_rights[1][0]===true){
+        this.position[95]='R';
+        this.position[98]=0;
+    }
+
+    //first time white king moves we lose all castling rights
+    if(from===24 && this.castling_rights[0].indexOf(true)>-1 )             {    board.castling_rights[0]=[false,false];                         } 
+    //first time a rook moves or is captured we lose this side castling rights
+    else if( (from===21 || to===21) && board.castling_rights[0][0]===true ) {    board.castling_rights[0][0]=false;  } 
+    else if( (from===28 || to===28) && board.castling_rights[0][1]===true ) {    board.castling_rights[0][1]=false;  }
+
+    
+    //first time black king moves we lose all castling rights
+    if(from===94 && this.castling_rights[1].indexOf(true)>-1 )             {    board.castling_rights[1]=[false,false];                         } 
+    //first time a rook moves or is captured we lose this side castling rights
+    else if( (from===91 || to===91) && board.castling_rights[1][0]===true ) {    board.castling_rights[1][0]=false;  } 
+    else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    board.castling_rights[1][1]=false;  }
+
+
+    this.moves.push([from,to]);                     //keep track of moves,
+    this.moving_player= 1 - this.moving_player;     //change moving player
+    this.find_valid_moves();                        //find valid moves for next move
 
     return true;
 
@@ -127,7 +148,7 @@ board.undo_move=function(){
 }
 
 board.move_random=function(){
-    //console.log(this.valid_moves);
+
     this.moving_player=this.moves.length%2==0?0:1;
 
     var keys = Object.keys(this.valid_moves[this.moving_player]);
@@ -137,8 +158,6 @@ board.move_random=function(){
     
     var from=parseInt(random_piece);
     var to=random_move;
-    
-    //console.log('from '+random_origin+' to '+random_destination);
 
     if(this.move(from,to)) return true;
 
@@ -165,10 +184,7 @@ board.find_valid_moves=function(){
 
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
-    /*this.controlling_squares[0]=[]; //white valid moves
-    this.controlling_squares[1]=[]; //black valid moves*/
-    
-    
+
     // iterate all boards squares
     for(var i=21;i<92;i=i+10){
         for(var j=0;j<8;j++){
@@ -196,17 +212,38 @@ board.find_valid_moves=function(){
             //target square is outside board
             if(this.position[target_square]==1 ) { break; } 
 
-            //pawns cannot capture in empty squares
-            if( (piece==='p' || piece==='P') && (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; }
+            //pawn rules
+            if (piece==='p' || piece==='P'){
 
-            //and cannot go forward when they are blocked
-            if( (piece==='p' || piece==='P') && (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }
+                //cannot capture in empty squares
+                if( (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; }
+                
+                //and cannot go forward when they are blocked
+                 if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }
             
+                //if pawns are not in the first row they cannot move two squares
+                 if( ( (piece==='p' && square>40 ) || (piece==='P' && square<79 ) ) && Math.abs(directions[piece][k][l]===20 )){ break; }
+            
+            }
+
+            
+            if(piece==='k' || piece==='K'){ 
+
+            if(directions[piece][k][l]==-2){    
+                //king side castle 
+                if(this.castling_rights[moving_piece_color][0]===true && directions[piece][k][l]==-2 && this.position[target_square]!=0)  { break; }
+                //queen side castle 
+                if(this.castling_rights[moving_piece_color][1]===true && directions[piece][k][l]==2 && this.position[target_square]!=0) { break; }
+            }    
+                
+            }
 
             (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
             
-            //we found a blocking piece
+            //we found a capture
             if( moving_piece_color !== target_piece_color && target_piece_color!=2 ) { break; } 
+
+            
 
             //this.controlling_squares[moving_piece_color].controlling_squares.push(target_square);
             //this.valid_moves[this.find_piece_color(square)][square].push(target_square);
@@ -218,20 +255,7 @@ board.find_valid_moves=function(){
     }
         
 }
-    /*
-            if(key=='B' || key=='R' || key=='Q'){
-        
-                for (let i=2;i<8;i++){
-                    
-                    for(let j=0,l=pieces[key].length; j<l; j++) {
-        
-                        pieces[key].push(pieces[key][j]*i);
-        
-                    }
-                }
-            }*/
 
-        //console.log(this.position[i+j]);
         
 }
 
