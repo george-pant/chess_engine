@@ -6,13 +6,13 @@ var piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
-directions["P"] = [-11,-10,-9,-20];
-directions["p"] = [9,10,11,20];
-directions["B"] = directions["b"] = [-11,-9,11,9];
-directions["R"] = directions["r"] = [-1,-10,1,10];
-directions["N"] = directions["n"] = [-21,-19,-12,-8,8,12,19,21];
-directions["Q"] = directions["q"] = [-11,-10,-9,-1,1,9,10,11];
-directions["K"] = directions["k"] = [-11,-10,-9,-1,1,9,10,11];
+directions["P"] = [[-10,-20],[-9],[-11]];
+directions["p"] = [[10,20],[9],[11]];
+directions["B"] = directions["b"] = [[-11,-22,-33,-44,-55,-66,-77],[-9],[11,22,33,44,55,66,77],[9]];
+directions["R"] = directions["r"] = [[-1,-2,-3,-4,-5,-6,-7],[-10,-20,-30,-40,-50,-60,-70],[1,2,3,4,5,6,7],[10,20,30,40,50,60,70] ];
+directions["N"] = directions["n"] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]];
+directions["Q"] = directions["q"] = [[-11],[-10],[-9],[-1,-2,-3,-4,-5,-6,-7],[1,2,3,4,5,6,7],[9],[10],[11]];
+directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1],[1],[9],[10],[11]];
 
 
 
@@ -104,10 +104,11 @@ board.move=function(from,to){
 
     if(this.valid_moves[this.moving_player][from].includes(to)){
     
-    this.history.push(position);
+    this.history.push(this.position);
     this.position[to]=this.position[from];
     this.position[from]=0;
     this.moves.push([from,to]);
+    this.moving_player= 1 - this.moving_player;
     this.find_valid_moves();
 
     return true;
@@ -155,7 +156,7 @@ board.move_algebraic=function(from,to){
 }
 
 board.find_piece_color=function(square){
-    if (this.position[square]==0 || this.position[square]==1 ){ return 2; }
+    if (this.position[square]==0 || this.position[square]==1 || typeof this.position[square]==='undefined'){ return 2; }
     return (this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90)?1:0
 }
 
@@ -182,28 +183,35 @@ board.find_valid_moves=function(){
         //if piece in the square find all possible moves for this piece
         for(var k=0;k<directions[piece].length;k++) {
 
-            target_square=square+directions[piece][k];
+            for(var l=0;l<directions[piece][k].length;l++) {
+
+            target_square=square+directions[piece][k][l];
+            
             target_piece_color=this.find_piece_color(target_square);
 
-           // if(square!=31 && square!=22) {continue;}
+            
+            //target square is occupied by friendly piece
+            if( moving_piece_color === target_piece_color ) { break; } 
 
             //target square is outside board
-            if(this.position[target_square]==1) { continue; } 
-
-            //target square is occupied by friendly piece
-            if( moving_piece_color === target_piece_color ) { continue; } 
+            if(this.position[target_square]==1 ) { break; } 
 
             //pawns cannot capture in empty squares
-            if( (piece=='p' || piece==='P') && (square-target_square)%2!=0 && this.position[target_square]==0 ){ continue; }
+            if( (piece==='p' || piece==='P') && (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; }
+
             //and cannot go forward when they are blocked
-            if( (piece=='p' || piece==='P') && (square-target_square)%2!=0 && this.position[target_square]!==0 ){ continue; }
+            if( (piece==='p' || piece==='P') && (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }
             
 
             (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
+            
+            //we found a blocking piece
+            if( moving_piece_color !== target_piece_color && target_piece_color!=2 ) { break; } 
 
             //this.controlling_squares[moving_piece_color].controlling_squares.push(target_square);
             //this.valid_moves[this.find_piece_color(square)][square].push(target_square);
-            
+          
+            }
             
         }
 

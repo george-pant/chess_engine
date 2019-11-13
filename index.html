@@ -103,6 +103,8 @@
     
     function update_board(board){
             
+            $(".chessboard div").removeClass("active inactive target");
+
             for(var i=0;i<board.length;i++){
 
                 if(board[i]!=1){
@@ -147,16 +149,48 @@
             
             var clicked_square=$(this).data('square');
             var piece_color=$(this).data('piece-color');
+            var valid_piece_moves=board.valid_moves[board.moving_player][clicked_square];
 
-            $(".chessboard div").removeClass("active");
-
-            if( [0,1].includes(piece_color) && board.moving_player===piece_color && board.valid_moves.indexOf(clicked_square) ){
-
-            $(this).addClass('active');
-            
-            }else{
-                
+            //if we click an already clicked square we unselect it
+            if($(this).hasClass('active') || $(this).hasClass('inactive') ){
+                $(".chessboard div").removeClass('active inactive target');
+                return;
             }
+            
+            // of if its a target square we make the move
+            if($(this).hasClass('target')){
+
+            var from=$(".chessboard div.active").data('square');
+            var to=$(this).data('square');
+
+            board.move(from,to);
+            update_board(board.position);
+
+            return;
+
+            }
+
+            //we click a new square so we clear the board 
+
+            $(".chessboard div").removeClass('active inactive target');
+            
+            if( [0,1].includes(piece_color) && board.moving_player===piece_color && typeof board.valid_moves[board.moving_player][clicked_square]!=='undefined' ){
+
+            for(var i=0;i<valid_piece_moves.length;i++){
+
+                $(this).addClass('active');
+
+                $('*[data-square="'+board.valid_moves[board.moving_player][clicked_square][i]+'"]').addClass('target');
+
+                }
+            
+
+            }else{
+            
+            $(this).addClass('inactive');
+
+            }
+
             
         });
 

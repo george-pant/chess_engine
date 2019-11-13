@@ -8,9 +8,20 @@
 .chessboard .square{
     cursor:pointer;
 }
-.chessboard .square.active{
+
+.chessboard .square.active,
+.chessboard .square.target
+{
    background-color: lightblue;
 }
+
+.chessboard .square.target:hover{
+    filter: brightness(75%);
+}
+
+.chessboard .square.inactive{
+    background-color: lightcoral;
+ }
 
 .black {
     float: left;
