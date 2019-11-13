@@ -43,17 +43,17 @@ var starting_position=[
 
 var board = {};
 
-board.moving_player=0                   //0 for white player 1 for black
-board.moves=[];                         //game moves
-board.valid_moves=[];                   //possible valid moves
-board.position=[];
-board.history=[];
-board.castling_rights=[];
-board.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
-board.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
 
-board.initialize=function(pos){
-    this.position=pos;
+board.initialize=function(){
+
+    this.moving_player=0                   //0 for white player 1 for black
+    this.moves=[];                         //game moves
+    this.valid_moves=[];                   //possible valid moves
+    this.board.position=starting_position;
+    this.history=[];
+    this.castling_rights=[];
+    this.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
+    this.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
     this.find_valid_moves();
 }
 
@@ -88,44 +88,52 @@ board.move=function(from,to){
 
     if(this.valid_moves[this.moving_player][from].includes(to)){
     
-    this.history.push(this.position);               //keep the current position in history
+    //keep the current state in history
+
+    this.history.push( 
+        {
+            position:this.position,
+            castling_rights:this.castling_rights,
+            moves:this.moves
+            
+        });               
 
     //make the move in board
     this.position[to]=this.position[from];
     this.position[from]=0;
     
-    if(from===24 && to===22 && board.castling_rights[0][0]===true){
+    if(from===24 && to===22 && this.castling_rights[0][0]===true){
         this.position[23]='r';
         this.position[21]=0;
     }
 
-    if(from===24 && to===26 && board.castling_rights[0][0]===true){
+    if(from===24 && to===26 && this.castling_rights[0][0]===true){
         this.position[25]='r';
         this.position[28]=0;
     }
 
-    if(from===94 && to===92 && board.castling_rights[1][0]===true){
+    if(from===94 && to===92 && this.castling_rights[1][0]===true){
         this.position[93]='R';
         this.position[91]=0;
     }
 
-    if(from===94 && to===96 && board.castling_rights[1][0]===true){
+    if(from===94 && to===96 && this.castling_rights[1][0]===true){
         this.position[95]='R';
         this.position[98]=0;
     }
 
     //first time white king moves we lose all castling rights
-    if(from===24 && this.castling_rights[0].indexOf(true)>-1 )             {    board.castling_rights[0]=[false,false];                         } 
+    if(from===24 && this.castling_rights[0].indexOf(true)>-1 )             {     this.castling_rights[0]=[false,false];                         } 
     //first time a rook moves or is captured we lose this side castling rights
-    else if( (from===21 || to===21) && board.castling_rights[0][0]===true ) {    board.castling_rights[0][0]=false;  } 
-    else if( (from===28 || to===28) && board.castling_rights[0][1]===true ) {    board.castling_rights[0][1]=false;  }
+    else if( (from===21 || to===21) && board.castling_rights[0][0]===true ) {    this.castling_rights[0][0]=false;  } 
+    else if( (from===28 || to===28) && board.castling_rights[0][1]===true ) {    this.castling_rights[0][1]=false;  }
 
     
     //first time black king moves we lose all castling rights
-    if(from===94 && this.castling_rights[1].indexOf(true)>-1 )             {    board.castling_rights[1]=[false,false];                         } 
+    if(from===94 && this.castling_rights[1].indexOf(true)>-1 )             {     this.castling_rights[1]=[false,false];                         } 
     //first time a rook moves or is captured we lose this side castling rights
-    else if( (from===91 || to===91) && board.castling_rights[1][0]===true ) {    board.castling_rights[1][0]=false;  } 
-    else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    board.castling_rights[1][1]=false;  }
+    else if( (from===91 || to===91) && board.castling_rights[1][0]===true ) {    this.castling_rights[1][0]=false;  } 
+    else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    this.castling_rights[1][1]=false;  }
 
 
     this.moves.push([from,to]);                     //keep track of moves,
@@ -143,8 +151,22 @@ board.move=function(from,to){
 }
 
 board.undo_move=function(){
+    
+    if(this.history.length>0){
+
+    var previous=this.history.pop();
+
+    this.position=previous.position;
+    this.castling_rights=previous.castling_rights;
+    this.moves=previous.moves; 
+    this.moving_player= 1 - this.moving_player; 
 
     this.find_valid_moves();
+
+    }else{
+        return false;
+    }
+
 }
 
 board.move_random=function(){
@@ -228,13 +250,11 @@ board.find_valid_moves=function(){
 
             
             if(piece==='k' || piece==='K'){ 
-
-            if(directions[piece][k][l]==-2){    
+   
                 //king side castle 
-                if(this.castling_rights[moving_piece_color][0]===true && directions[piece][k][l]==-2 && this.position[target_square]!=0)  { break; }
+                if( (this.castling_rights[moving_piece_color][0]!==true && directions[piece][k][l]==-2) || this.position[target_square]!=0) { break; }
                 //queen side castle 
-                if(this.castling_rights[moving_piece_color][1]===true && directions[piece][k][l]==2 && this.position[target_square]!=0) { break; }
-            }    
+                if( (this.castling_rights[moving_piece_color][1]!==true && directions[piece][k][l]==2)  || this.position[target_square]!=0) { break; }  
                 
             }
 
@@ -259,7 +279,7 @@ board.find_valid_moves=function(){
         
 }
 
-board.initialize(starting_position);
+board.initialize();
 /*
 board.initialize(starting_position);
 

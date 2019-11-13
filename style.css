@@ -3,6 +3,19 @@
     height: 640px;
     margin: 20px;
     border: 25px solid #333;
+    margin:0 auto;
+}
+
+.info{
+    float: right;
+    width: 20vw;
+    display: block;
+    background: lightsalmon;
+    height: 60px;
+    padding: 12px;
+    border-radius: 10px;
+    line-height: 24px;
+    font-size: 17px;
 }
 
 .chessboard .square{
@@ -47,3 +60,16 @@
     display: table-cell;
     vertical-align:middle;
 }
+
+.button{
+    cursor:pointer;
+}
+
+@media only screen and (max-width: 1281px) {
+    .info {
+    width: 100;
+    position: absolute;
+    bottom: 70px;
+    right: 50px;
+    }
+  }

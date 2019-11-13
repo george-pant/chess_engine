@@ -23,6 +23,18 @@
   <script src="main.js"></script>
 </body>
 
+<div class="info">
+<div>
+Player:<span class="moving_player"> </span> to play
+</div>
+<div>
+Move :<span class="move_number"></span>
+</div>
+
+<div class="undo-move">TAKEBACK MOVE</div>
+<div class="new-game">NEW GAME</div>
+</div>
+
 <div class="chessboard">
     <!-- 1st -->
     <div class="square white" data-square="98"></div>
@@ -101,34 +113,40 @@
 
     <script>
     
-    function update_board(board){
-            
+    function update_board(){
+
+            var position=window.board.position;
+            var color=window.board.moving_player?'Black':'White';
+
+            $(".info .moving_player").text(color);
+            $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
+
             $(".chessboard div").removeClass("active inactive target");
 
-            for(var i=0;i<board.length;i++){
+            for(var i=0;i<position.length;i++){
 
-                if(board[i]!=1){
+                if(position[i]!=1){
 
                     piece='';
                     piece_color='';
-                    board[i]+='';
+                    position[i]+='';
 
-                    if(board[i]=='p') piece='&#9817;';
-                    if(board[i]=='P') piece='&#9823;';
-                    if(board[i]=='k') piece='&#9812;';
-                    if(board[i]=='K') piece='&#9818;';
-                    if(board[i]=='q') piece='&#9813;';
-                    if(board[i]=='Q') piece='&#9819;';
-                    if(board[i]=='b') piece='&#9815;';
-                    if(board[i]=='B') piece='&#9821;';
-                    if(board[i]=='n') piece='&#9816;';
-                    if(board[i]=='N') piece='&#9822;';
-                    if(board[i]=='r') piece='&#9814;';
-                    if(board[i]=='R') piece='&#9820;';
+                    if(position[i]=='p') piece='&#9817;';
+                    if(position[i]=='P') piece='&#9823;';
+                    if(position[i]=='k') piece='&#9812;';
+                    if(position[i]=='K') piece='&#9818;';
+                    if(position[i]=='q') piece='&#9813;';
+                    if(position[i]=='Q') piece='&#9819;';
+                    if(position[i]=='b') piece='&#9815;';
+                    if(position[i]=='B') piece='&#9821;';
+                    if(position[i]=='n') piece='&#9816;';
+                    if(position[i]=='N') piece='&#9822;';
+                    if(position[i]=='r') piece='&#9814;';
+                    if(position[i]=='R') piece='&#9820;';
 
-                    if(board[i].charCodeAt() >= 65 && board[i].charCodeAt() <= 90){
+                    if(position[i].charCodeAt() >= 65 && position[i].charCodeAt() <= 90){
                         piece_color=1;
-                    }else if(board[i].charCodeAt() >= 92 && board[i].charCodeAt() <= 122){
+                    }else if(position[i].charCodeAt() >= 92 && position[i].charCodeAt() <= 122){
                         piece_color=0;
                     }
 
@@ -144,6 +162,16 @@
     $(document).ready(function(){
 
         console.log(board);
+
+        $(".new-game").click(function(){
+            board.initialize();
+            update_board();
+        });
+
+        $(".undo-move").click(function(){
+            board.undo_move();
+            update_board();
+        });
 
         $(".chessboard div").click(function(){
             
@@ -164,7 +192,7 @@
             var to=$(this).data('square');
 
             board.move(from,to);
-            update_board(board.position);
+            update_board();
 
             return;
 
@@ -194,7 +222,7 @@
             
         });
 
-        update_board(board.position);
+        update_board();
 
     });
 
