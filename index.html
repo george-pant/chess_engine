@@ -19,10 +19,6 @@
 
 </head>
 
-<body>
-  <script src="main.js"></script>
-</body>
-
 <div class="info">
 <div>
 Player:<span class="moving_player"> </span> to play
@@ -115,8 +111,10 @@ Move :<span class="move_number"></span>
     
     function update_board(){
 
-            var position=window.board.position;
+            var position=board.position;
             var color=window.board.moving_player?'Black':'White';
+            var piece='';
+            var piece_color='';
 
             $(".info .moving_player").text(color);
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));

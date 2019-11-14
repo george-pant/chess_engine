@@ -1,10 +1,10 @@
 
-var squares = [];
+const squares = [];
 
-var piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
+const piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
 
 //direction each piece can move Only pawn have different based on color
-var directions  = [];
+const directions  = [];
 directions["P"] = [[-10,-20],[-9],[-11]];
 directions["p"] = [[10,20],[9],[11]];
 directions["B"] = directions["b"] = [[-11,-22,-33,-44,-55,-66,-77],[-9,-18,-27,-36,-45,-54,-63],[11,22,33,44,55,66,77],[9,18,27,36,45,54,63]];
@@ -13,6 +13,7 @@ directions["N"] = directions["n"] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]];
 directions["Q"] = directions["q"] = directions["r"].concat(directions["b"]);
 directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1,-2],[1],[9],[10],[11],[1,2]];
 
+const history=[];
 
 // map our array indexes to chess board squares Ue.g a1->21,a2->31,...
 
@@ -25,7 +26,7 @@ for(let i=1;i<9;i++){
 }
 
 
-var starting_position=[
+const starting_position=[
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
     1 ,'r','n','b','k','q','b','n','r', 1,
@@ -43,25 +44,25 @@ var starting_position=[
 
 var board = {};
 
+board.moving_player=0                   //0 for white player 1 for black
+board.moves=[];                         //game moves
+board.valid_moves=[];                   //possible valid moves
+board.valid_moves[0]=[];                   //possible valid moves
+board.valid_moves[1]=[];                   //possible valid moves
+board.position=[];
+board.history=[];
+board.castling_rights=[[true,true],[true,true]];
+//board.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
+//board.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
 
-board.initialize=function(){
 
-    this.moving_player=0                   //0 for white player 1 for black
-    this.moves=[];                         //game moves
-    this.valid_moves=[];                   //possible valid moves
-    this.board.position=starting_position;
-    this.history=[];
-    this.castling_rights=[];
-    this.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
-    this.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
-    this.find_valid_moves();
-}
 
 board.print=function(){
     
     var a=square=''; 
-    
-    for(let i=20;i<100;i++){
+
+    if(this.position){
+    for(var i=20;i<this.position;i++){
   
     square=this.position[i];
 
@@ -73,6 +74,9 @@ board.print=function(){
     }
 
     console.log(a);
+    }else{
+    console.log('board is not defined');
+    }
 
 }
 
@@ -90,7 +94,7 @@ board.move=function(from,to){
     
     //keep the current state in history
 
-    this.history.push( 
+        history.push( 
         {
             position:this.position,
             castling_rights:this.castling_rights,
@@ -244,7 +248,8 @@ board.find_valid_moves=function(){
                  if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }
             
                 //if pawns are not in the first row they cannot move two squares
-                 if( ( (piece==='p' && square>40 ) || (piece==='P' && square<79 ) ) && Math.abs(directions[piece][k][l]===20 )){ break; }
+
+                 if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; }
             
             }
 
@@ -270,16 +275,32 @@ board.find_valid_moves=function(){
           
             }
             
+            }
+
         }
-
-    }
+        
+    }   
         
 }
 
-        
-}
 
-board.initialize();
+function initialize(){
+    board.print();
+    board.moving_player=0                   //0 for white player 1 for black
+    board.moves=[];                         //game moves
+    board.valid_moves=[];                   //possible valid moves
+    board.position=window.starting_position;
+    board.print();
+    board.history=[];
+    board.castling_rights=[];
+    board.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
+    board.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
+    board.print();
+   // board.find_valid_moves();
+    board.print();
+};
+
+initialize();
 /*
 board.initialize(starting_position);
 
