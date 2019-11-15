@@ -25,7 +25,6 @@ for(let i=1;i<9;i++){
     } 
 }
 
-
 const starting_position=[
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
@@ -52,55 +51,18 @@ board.valid_moves[1]=[];                   //possible valid moves
 board.position=[];
 board.history=[];
 board.castling_rights=[[true,true],[true,true]];
-//board.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
-//board.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
 
 board.initialize=function(){
-    //this.print();
     this.moving_player=0                   //0 for white player 1 for black
     this.moves=[];                         //game moves
     this.valid_moves=[];                   //possible valid moves
     this.position=starting_position.concat();
-   // console.log(window.starting_position);
-    this.print();
     this.history=[];
     this.castling_rights=[];
     this.castling_rights[0]=[true,true];   //white castling rights [kingside,queenside]
     this.castling_rights[1]=[true,true];   //black castling rights [kingside,queenside]
-    this.print();
     this.find_valid_moves();
-    this.print();
 };
-
-
-board.print=function(){
-    
-    var a=square=''; 
-
-    if(this.position){
-    for(var i=20;i<100;i++){
-  
-    square=this.position[i];
-
-    if(i==20 || i%10==0) square='|';
-    if((i+1)%10==0) square='|\n';
-    if(this.position[i]==0) square='.';
-
-        a+=' '+square;
-    }
-
-    console.log(a);
-    }else{
-    console.log('board is not defined');
-    }
-
-}
-
-board.status=function(){
-    console.log(this.moving_player?'black':'white');
-    console.log("move "+this.moves.length);
-    console.log(this.moves);
-}
 
 board.move=function(from,to){
 
@@ -112,16 +74,18 @@ board.move=function(from,to){
 
         this.history.push( 
         {
-            position:this.position,
-            castling_rights:this.castling_rights,
-            moves:this.moves
+            position:this.position.concat(),
+            castling_rights:this.castling_rights.concat(),
+            moves:this.moves.concat()
             
         });               
 
     //make the move in board
-    this.position[to]=this.position[from];
+    this.position[parseInt(to)]=this.position[from];
     this.position[from]=0;
     
+    if(typeof to==='string') { this.position[parseInt(to)]=to[to.length-1] }  //pawn promotions
+
     if(from===24 && to===22 && this.castling_rights[0][0]===true){
         this.position[23]='r';
         this.position[21]=0;
@@ -176,9 +140,9 @@ board.undo_move=function(){
 
     var previous=this.history.pop();
 
-    this.position=previous.position;
+    this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
-    this.moves=previous.moves; 
+    this.moves=previous.moves.concat(); 
     this.moving_player= 1 - this.moving_player; 
 
     this.find_valid_moves();
@@ -191,7 +155,7 @@ board.undo_move=function(){
 
 board.move_random=function(){
 
-    this.moving_player=this.moves.length%2==0?0:1;
+    //this.moving_player=this.moves.length%2==0?0:1;
 
     var keys = Object.keys(this.valid_moves[this.moving_player]);
 
@@ -207,15 +171,6 @@ board.move_random=function(){
 
 }
 
-board.move_algebraic=function(from,to){
-
-    if(this.move(squares[from],squares[to])) {
-        return true;
-    }
-
-    return false;
-}
-
 board.find_piece_color=function(square){
     if (this.position[square]==0 || this.position[square]==1 || typeof this.position[square]==='undefined'){ return 2; }
     return (this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90)?1:0
@@ -227,69 +182,53 @@ board.find_valid_moves=function(){
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
-    // iterate all boards squares
-    for(var i=21;i<92;i=i+10){
+    for(var i=21;i<92;i=i+10){      // iterate all boards squares
+
         for(var j=0;j<8;j++){
         
         var square=i+j;
-        //if empty square continue
-        if (this.position[square]==0) { continue; }
+        
+        if (this.position[square]==0) { continue; }                                 //if empty square continue
             
         var piece=this.position[square];
         var moving_piece_color=this.find_piece_color(square);
 
-        //if piece in the square find all possible moves for this piece
-        for(var k=0;k<directions[piece].length;k++) {
+
+        for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
             for(var l=0;l<directions[piece][k].length;l++) {
 
-            target_square=square+directions[piece][k][l];
-            
-            target_piece_color=this.find_piece_color(target_square);
+                target_square=square+directions[piece][k][l];
+                target_piece_color=this.find_piece_color(target_square);
 
-            
-            //target square is occupied by friendly piece
-            if( moving_piece_color === target_piece_color ) { break; } 
+                if( moving_piece_color === target_piece_color ) { break; }               //target square is occupied by friendly piece
 
-            //target square is outside board
-            if(this.position[target_square]==1 ) { break; } 
+                if(this.position[target_square]==1 ) { break; }                          //target square is outside board
 
-            //pawn rules
-            if (piece==='p' || piece==='P'){
+                if (piece==='p' || piece==='P'){                                         //pawn rules
 
-                //cannot capture in empty squares
-                if( (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; }
+                    if( (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; } //cannot capture in empty squares
+                    
+                    if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }    //and cannot go forward when they are blocked
                 
-                //and cannot go forward when they are blocked
-                 if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }
-            
-                //if pawns are not in the first row they cannot move two squares
+                    if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } //if pawns are not in the first row they cannot move two squares
+                    
+                    if (piece==='p' && target_square>90) { target_square+='q' } if (piece==='P' && target_square<29 ) { target_square+='Q' } //auto promote to queen
+                }
 
-                 if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; }
-            
-            }
+                    if(piece==='k' || piece==='K'){ 
+        
+                        if( directions[piece][k][l]==-2 && ( this.castling_rights[moving_piece_color][0]!==true || this.position[target_square]!=0) ){ break; } //king side castle 
+                        
+                        if(directions[piece][k][l]==2 && ( this.castling_rights[moving_piece_color][1]!==true || this.position[target_square-1]!=0 || this.position[target_square]!=0  )) { break; }  //queen side castle 
 
-            
-            if(piece==='k' || piece==='K'){ 
-   
-                //king side castle 
-                if( (this.castling_rights[moving_piece_color][0]!==true && directions[piece][k][l]==-2) || this.position[target_square]!=0) { break; }
-                //queen side castle 
-                if( (this.castling_rights[moving_piece_color][1]!==true && directions[piece][k][l]==2)  || this.position[target_square]!=0) { break; }  
+                    }
+
+                (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
                 
-            }
-
-            (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
+                if( moving_piece_color !== target_piece_color && target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
             
-            //we found a capture
-            if( moving_piece_color !== target_piece_color && target_piece_color!=2 ) { break; } 
-
-            
-
-            //this.controlling_squares[moving_piece_color].controlling_squares.push(target_square);
-            //this.valid_moves[this.find_piece_color(square)][square].push(target_square);
-          
-            }
+                }
             
             }
 
@@ -301,6 +240,36 @@ board.find_valid_moves=function(){
 
 
 board.initialize();
+
+var random_moves=50;
+var i=0;
+
+while(random_moves!=-1){
+    var t0 = performance.now();    
+    board.move_random();
+    random_moves--;
+    i++;
+
+    if(random_moves==0){
+    board.initialize(); 
+    random_moves=50;  
+    }
+
+    if(i%100000==0) {
+        var t1 = performance.now();
+        console.log("100000 " + (t1 - t0)*1000 + " seconds.");
+    }
+}/*
+    setInterval(function(){ 
+        
+        if(random_moves>0) {
+        random_moves--;
+        board.move_random();
+        update_board(board)
+        }
+    }, 1200);*/
+
+
 /*
 board.initialize(starting_position);
 
@@ -334,3 +303,44 @@ console.log(board.valid_moves);
 
 //console.log(pieces['B']);
 
+/*
+board.print=function(){
+    
+    var a=square=''; 
+
+    if(this.position){
+    for(var i=20;i<100;i++){
+  
+    square=this.position[i];
+
+    if(i==20 || i%10==0) square='|';
+    if((i+1)%10==0) square='|\n';
+    if(this.position[i]==0) square='.';
+
+        a+=' '+square;
+    }
+
+    console.log(a);
+    }else{
+    console.log('board is not defined');
+    }
+
+}
+
+board.status=function(){
+    console.log(this.moving_player?'black':'white');
+    console.log("move "+this.moves.length);
+    console.log(this.moves);
+}*/
+
+/*
+
+board.move_algebraic=function(from,to){
+
+    if(this.move(squares[from],squares[to])) {
+        return true;
+    }
+
+    return false;
+}
+*/

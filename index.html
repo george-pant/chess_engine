@@ -27,8 +27,8 @@ Player:<span class="moving_player"> </span> to play
 Move :<span class="move_number"></span>
 </div>
 
-<div class="undo-move">TAKEBACK MOVE</div>
-<div class="new-game">NEW GAME</div>
+<div class="button undo-move">TAKEBACK MOVE</div>
+<div class="button new-game">NEW GAME</div>
 </div>
 
 <div class="chessboard">
@@ -120,7 +120,8 @@ Move :<span class="move_number"></span>
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
 
             $(".chessboard div").removeClass("active inactive target");
-
+            $(".chessboard div").data('promotion-piece',null);
+            
             for(var i=0;i<position.length;i++){
 
                 if(position[i]!=1){
@@ -178,6 +179,7 @@ Move :<span class="move_number"></span>
             var clicked_square=$(this).data('square');
             var piece_color=$(this).data('piece-color');
             var valid_piece_moves=board.valid_moves[board.moving_player][clicked_square];
+            var promotion_piece;
 
             //if we click an already clicked square we unselect it
             if($(this).hasClass('active') || $(this).hasClass('inactive') ){
@@ -190,6 +192,8 @@ Move :<span class="move_number"></span>
 
             var from=$(".chessboard div.active").data('square');
             var to=$(this).data('square');
+            
+           if(typeof $(this).data('promotion-piece')!=='undefined') { to+=$(this).data('promotion-piece');}
 
             board.move(from,to);
             update_board(board);
@@ -206,20 +210,26 @@ Move :<span class="move_number"></span>
 
             for(var i=0;i<valid_piece_moves.length;i++){
 
+                let target_square=board.valid_moves[board.moving_player][clicked_square][i];
+                console.log(target_square);
+                promotion_piece=false;
+
+                if(typeof target_square==='string') { promotion_piece=target_square[target_square.length-1]; }
+
+                
+
                 $(this).addClass('active');
 
-                $('*[data-square="'+board.valid_moves[board.moving_player][clicked_square][i]+'"]').addClass('target');
-
-                }
-            
+                $('*[data-square="'+parseInt(target_square)+'"]').addClass('target');
+                if(promotion_piece) { $('*[data-square="'+parseInt(target_square)+'"]').data('promotion-piece',promotion_piece); }
+            }
 
             }else{
             
-            $(this).addClass('inactive');
+                $(this).addClass('inactive');
 
             }
-
-            
+ 
         });
 
         
