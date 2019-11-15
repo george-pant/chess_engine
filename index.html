@@ -109,7 +109,7 @@ Move :<span class="move_number"></span>
 
     <script>
     
-    function update_board(){
+    function update_board(board){
 
             var position=board.position;
             var color=window.board.moving_player?'Black':'White';
@@ -161,14 +161,16 @@ Move :<span class="move_number"></span>
 
         console.log(board);
 
+        update_board(board);
+
         $(".new-game").click(function(){
             board.initialize();
-            update_board();
+            update_board(board);
         });
 
         $(".undo-move").click(function(){
             board.undo_move();
-            update_board();
+            update_board(board);
         });
 
         $(".chessboard div").click(function(){
@@ -190,7 +192,7 @@ Move :<span class="move_number"></span>
             var to=$(this).data('square');
 
             board.move(from,to);
-            update_board();
+            update_board(board);
 
             return;
 
@@ -220,7 +222,7 @@ Move :<span class="move_number"></span>
             
         });
 
-        update_board();
+        
 
     });
 
