@@ -244,8 +244,8 @@ board.initialize();
 var random_moves=50;
 var i=0;
 
-while(random_moves!=-1){
-    var t0 = performance.now();    
+var t0 = performance.now(); 
+while(random_moves!=-1){   
     board.move_random();
     random_moves--;
     i++;
@@ -253,11 +253,13 @@ while(random_moves!=-1){
     if(random_moves==0){
     board.initialize(); 
     random_moves=50;  
+    var t0 = performance.now(); 
     }
 
     if(i%100000==0) {
         var t1 = performance.now();
-        console.log("100000 " + (t1 - t0)*1000 + " seconds.");
+        console.log("100000 " + 100000/((t1 - t0)*1000) + " moves/second.");
+        var t0 = performance.now(); 
     }
 }/*
     setInterval(function(){ 
