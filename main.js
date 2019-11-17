@@ -241,35 +241,24 @@ board.find_valid_moves=function(){
 
 board.initialize();
 
-var random_moves=50;
-var i=0;
+var worker = new Worker('worker.js');
 
-var t0 = performance.now(); 
-while(random_moves!=-1){   
-    board.move_random();
-    random_moves--;
-    i++;
+worker.addEventListener('message', function(e) {
+    console.log(e.data);
+  });
 
-    if(random_moves==0){
-    board.initialize(); 
-    random_moves=50;  
-    var t0 = performance.now(); 
-    }
+worker.postMessage('start');
+console.log(worker);
+//var random_moves=50;
 
+/*
     if(i%100000==0) {
         var t1 = performance.now();
         console.log("100000 " + 100000/((t1 - t0)*1000) + " moves/second.");
         var t0 = performance.now(); 
-    }
-}/*
-    setInterval(function(){ 
-        
-        if(random_moves>0) {
-        random_moves--;
-        board.move_random();
-        update_board(board)
-        }
-    }, 1200);*/
+    }*/
+
+    
 
 
 /*
