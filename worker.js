@@ -1,10 +1,16 @@
 
 //console.log('test');
 
-self.addEventListener('message', function(e) {
+onmessage = function(e) {
+    console.log('Message received from main script');
+    var workerResult = 'Result: ' + (e.data);
+    console.log('Posting message back to main script');
+    postMessage(workerResult);
+  }
+
 //var i;
 
-self.postMessage('test');
+
 /*
     setInterval(function(){ 
         
@@ -27,4 +33,4 @@ self.postMessage('test');
         self.postMessage(message);
 
     }*/
-  });
+ 

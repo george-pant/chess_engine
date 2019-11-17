@@ -241,14 +241,15 @@ board.find_valid_moves=function(){
 
 board.initialize();
 
-var worker = new Worker('worker.js');
+var myworker = new Worker('worker.js');
 
-worker.addEventListener('message', function(e) {
-    console.log(e.data);
-  });
+myworker.onmessage = function(e) {
+    console.log('Message received from worker'+ e.data);
+  }
 
-worker.postMessage('start');
-console.log(worker);
+
+myworker.postMessage('start');
+
 //var random_moves=50;
 
 /*
