@@ -247,13 +247,35 @@ board.find_valid_moves=function(){
     }   
 
     //  make all moves and if king is checked remove from valid moves 
+
+    var final_moves=Object.keys(this.valid_moves[0]);
+
+    for(var i=0;i<final_moves.length;i++){
+
+        for(var j=0;j<this.valid_moves[0][final_moves[i]].length;j++){
+
+         console.log(this.valid_moves[0][final_moves[i]][j]);
+
+         from=final_moves[i];
+         to=this.valid_moves[0][final_moves[i]][j];
+
+         this.position[parseInt(to)]=this.position[from];
+         this.position[from]=0;
+
+         var king_square=this.position.indexOf('k');
+         console.log(king_square);
+
+    }
+}
+    //console.log(final_moves);
+/*
         for(var i=0;k<this.valid_moves[moving_piece_color].length;i++) { 
             this.position[parseInt(to)]=this.position[from];
             this.position[from]=0;
 
             this.castling_rights[0].indexOf(true)
 
-        }
+        }*/
 
         
 }
@@ -261,7 +283,7 @@ board.find_valid_moves=function(){
 
 
 board.initialize();
-
+/*
 var i=0;var t0 = performance.now();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     while(i<100000){   
       //console.lo                                                                                                                                                                                                                                                                                                                          g('Starting2..');
@@ -278,7 +300,7 @@ var i=0;var t0 = performance.now();
 
 
     console.log( moves_per_sec.toFixed(2) + " moves/second.");
-
+*/
 
 
 
