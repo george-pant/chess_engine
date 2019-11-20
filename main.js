@@ -68,7 +68,7 @@ board.initialize=function(){
 
 board.move=function(from,to){
 
-    this.moving_player=this.moves.length%2==0?0:1;
+    this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
 
     if(this.valid_moves[this.moving_player][from].includes(to)){
     
@@ -125,6 +125,8 @@ board.move=function(from,to){
     this.moves.push([from,to]);                     //keep track of moves,
     this.moving_player= 1 - this.moving_player;     //change moving player
     this.find_valid_moves();                        //find valid moves for next move
+
+    if(this.valid_moves[this.moving_player].length===0){ alert('checkmate'); }
 
     return true;
 
@@ -197,6 +199,9 @@ board.find_valid_moves=function(){
         
         var square=i+j;
         
+        if(square==94){ 
+            console.log(true);
+        }
         if (this.position[square]==0) { continue; }                                 //if empty square continue
             
         var piece=this.position[square];
@@ -235,44 +240,51 @@ board.find_valid_moves=function(){
 
                     }
 
-                    //  make move temporarily and if king is checked break 
-                    var king_capture_found=false;
+                    var king_capture_found=false;   //  make move temporarily and if king is checked break 
                     
                     var old_target=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=this.position[square];
                     this.position[square]=0;
+                    //this.moving_player= 1 - this.moving_player; 
                     
-                    var king_square=this.position.indexOf('k');
-                    var king_color=this.find_piece_color(king_square);
+                    var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
+                    var king_color=this.moving_player;
 
-                    loop1:
 
                     for(var m=0;m<directions['check'].length;m++) {  
-
-                    loop2:
 
                         for(var n=0;n<directions['check'][m].length;n++) {
                             
                             checkmate_check=king_square+directions['check'][m][n];
 
-                            if (this.position[checkmate_check]==0) { continue loop2; }
+                            if (this.position[checkmate_check]==0) { continue; }
 
-                            if(this.position[checkmate_check]==1 ) { break loop2; } 
+                            if(this.position[checkmate_check]==1 ) { break; } 
 
                             attacking_piece_color=this.find_piece_color(checkmate_check);
 
-                            if( king_color === attacking_piece_color ) { break loop2; } //we found our own piece first
+                            if( king_color === attacking_piece_color ) { break; } //we found our own piece first
 
-                            if(
-                                (n<4 && this.position[checkmate_check]==='R')|| 
-                                (n>3 && n<8 && this.position[checkmate_check]==='B') ||
-                                (n<8 && this.position[checkmate_check]==='Q') || 
-                                (n>7 && this.position[checkmate_check]==='N')
+                        /*    if(
+                                (n<4 && this.position[checkmate_check].toASCIILower==='r' ) || 
+                                (n>3 && this.position[checkmate_check].toASCIILower==='b' ) ||
+                                (n<8 && this.position[checkmate_check].toASCIILower==='q' ) || 
+                                (n>7 && this.position[checkmate_check].toASCIILower==='n' )
                             ){ 
+                        */
+
+                            if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
+                                (m<4 && ( (king_color===0 && this.position[checkmate_check]==='R') || (king_color===1 && this.position[checkmate_check]==='r') ) )|| 
+                                (m>3 && m<8 && ( (king_color===0 && this.position[checkmate_check]==='B') || (king_color===1 && this.position[checkmate_check]==='b') ) ) ||
+                                (m<8 && ( (king_color===0 && this.position[checkmate_check]==='Q') || (king_color===1 && this.position[checkmate_check]==='q') ) ) || 
+                                (m>7 && ( (king_color===0 && this.position[checkmate_check]==='N') || (king_color===1 && this.position[checkmate_check]==='n') ) )
+                            ){ 
+                                console.log('king capture');
                                 king_capture_found=true; 
-                                //m=n=15; //break the check for king capture;
-                                break loop1;
+                                m=n=15; //break the check for king capture;
                             
+                            }else{
+                                break; //non attacking enemy piece blocking the way 
                             }
                         
                             
@@ -280,11 +292,9 @@ board.find_valid_moves=function(){
             
                      }
 
-                     //console.log(square);
-                     //console.log(target_square);
-
                     this.position[square]=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=old_target;
+                    //this.moving_player= 1 - this.moving_player; 
                      
                 if(!king_capture_found){
 
@@ -292,7 +302,7 @@ board.find_valid_moves=function(){
 
                 }
                 
-                if( /*moving_piece_color !== target_piece_color && */!target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
+                if( /*moving_piece_color !== target_piece_color && */target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
             
                 }
             
@@ -302,6 +312,7 @@ board.find_valid_moves=function(){
         
     }   
 
+}
     //  make all moves and if king is checked remove from valid moves 
 /*
     var final_moves=Object.keys(this.valid_moves[0]);
@@ -343,9 +354,6 @@ board.find_valid_moves=function(){
             this.castling_rights[0].indexOf(true)
 
         }*/
-
-        
-}
 
 
 
