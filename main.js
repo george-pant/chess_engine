@@ -45,6 +45,7 @@ const starting_position=[
 
 var board = {};
 
+board.game_status=2                     //0 if white won 1 for black 2 for game in progress
 board.moving_player=0                   //0 for white player 1 for black
 board.moves=[];                         //game moves
 board.valid_moves=[];                   //possible valid moves
@@ -55,7 +56,8 @@ board.history=[];
 board.castling_rights=[[true,true],[true,true]];
 
 board.initialize=function(){
-    this.moving_player=0                   //0 for white player 1 for black
+    this.game_status=2; 
+    this.moving_player=0;                   //0 for white player 1 for black
     this.moves=[];                         //game moves
     this.valid_moves=[];                   //possible valid moves
     this.position=starting_position.concat();
@@ -126,7 +128,9 @@ board.move=function(from,to){
     this.moving_player= 1 - this.moving_player;     //change moving player
     this.find_valid_moves();                        //find valid moves for next move
 
-    if(this.valid_moves[this.moving_player].length===0){ alert('checkmate'); }
+    if(this.valid_moves[this.moving_player].length===0){ 
+        this.game_status=this.moving_player= 1 - this.moving_player;
+    }
 
     return true;
 
@@ -147,7 +151,12 @@ board.undo_move=function(){
     this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
     this.moves=previous.moves.concat(); 
-    this.moving_player= 1 - this.moving_player; 
+    
+    if(this.game_status==2){
+        this.moving_player= 1 - this.moving_player;
+    }else{  
+    this.game_status=2;
+    }
 
     this.find_valid_moves();
 
@@ -274,12 +283,16 @@ board.find_valid_moves=function(){
                         */
 
                             if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
+                                ( 
+                                    ( (directions['check'][m][n]===12 || directions['check'][m][n]===11)  && this.position[checkmate_check]==='P' && king_color===0  )  
+                                    || 
+                                    ( (directions['check'][m][n]===-12 || directions['check'][m][n]===-11)  && this.position[checkmate_check]==='p' && king_color===1  )  
+                                )|| 
                                 (m<4 && ( (king_color===0 && this.position[checkmate_check]==='R') || (king_color===1 && this.position[checkmate_check]==='r') ) )|| 
                                 (m>3 && m<8 && ( (king_color===0 && this.position[checkmate_check]==='B') || (king_color===1 && this.position[checkmate_check]==='b') ) ) ||
                                 (m<8 && ( (king_color===0 && this.position[checkmate_check]==='Q') || (king_color===1 && this.position[checkmate_check]==='q') ) ) || 
                                 (m>7 && ( (king_color===0 && this.position[checkmate_check]==='N') || (king_color===1 && this.position[checkmate_check]==='n') ) )
                             ){ 
-                                console.log('king capture');
                                 king_capture_found=true; 
                                 m=n=15; //break the check for king capture;
                             

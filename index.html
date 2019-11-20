@@ -21,7 +21,7 @@
 
 <div class="info">
 <div>
-Player:<span class="moving_player"> </span> to play
+Status:<span class="moving_player"> </span>
 </div>
 <div>
 Move :<span class="move_number"></span>
@@ -113,10 +113,11 @@ Move :<span class="move_number"></span>
 
             var position=board.position;
             var color=(window.board.moving_player)?'Black':'White';
+            var status=(window.board.game_status==2)?' to play':' won';
             var piece='';
             var piece_color='';
 
-            $(".info .moving_player").text(color);
+            $(".info .moving_player").text(color + status);
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
 
             $(".chessboard div").removeClass("active inactive target");
@@ -176,6 +177,8 @@ Move :<span class="move_number"></span>
 
         $(".chessboard div").click(function(){
             
+            if (window.board.game_status!=2) return false;
+
             var clicked_square=$(this).data('square');
             var piece_color=$(this).data('piece-color');
             var valid_piece_moves=board.valid_moves[board.moving_player][clicked_square];
@@ -211,12 +214,9 @@ Move :<span class="move_number"></span>
             for(var i=0;i<valid_piece_moves.length;i++){
 
                 let target_square=board.valid_moves[board.moving_player][clicked_square][i];
-                console.log(target_square);
                 promotion_piece=false;
 
                 if(typeof target_square==='string') { promotion_piece=target_square[target_square.length-1]; }
-
-                
 
                 $(this).addClass('active');
 
