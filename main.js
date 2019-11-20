@@ -13,6 +13,7 @@ directions["R"] = directions["r"] = [[-1,-2,-3,-4,-5,-6,-7],[-10,-20,-30,-40,-50
 directions["N"] = directions["n"] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]];
 directions["Q"] = directions["q"] = directions["r"].concat(directions["b"]);
 directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1,-2],[1],[9],[10],[11],[1,2]];
+directions["check"]=directions["q"].concat(directions["n"]);
 
 var history=[];
 
@@ -180,7 +181,7 @@ board.move_random=function(){
 }
 
 board.find_piece_color=function(square){
-    if (this.position[square]==0 /*|| this.position[square]==1 || typeof this.position[square]==='undefined'*/){ return 2; }
+    if (this.position[square]==0 || this.position[square]==1  || typeof this.position[square]==='undefined'){ return 2; }
     return (this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90)?1:0
 }
 
@@ -199,16 +200,16 @@ board.find_valid_moves=function(){
         if (this.position[square]==0) { continue; }                                 //if empty square continue
             
         var piece=this.position[square];
-        var moving_piece_color=this.find_piece_color(square);
+        var moving_piece_color= this.find_piece_color(square);
 
         if(moving_piece_color!=this.moving_player) { continue; }
 
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
             for(var l=0;l<directions[piece][k].length;l++) {
-
-                target_square=square+directions[piece][k][l];
-
+                
+                target_square=parseInt(square)+parseInt(directions[piece][k][l]);
+                
                 if(this.position[target_square]==1 ) { break; }                          //target square is outside board
 
                 target_piece_color=this.find_piece_color(target_square);
@@ -234,7 +235,62 @@ board.find_valid_moves=function(){
 
                     }
 
+                    //  make move temporarily and if king is checked break 
+                    var king_capture_found=false;
+                    
+                    var old_target=this.position[parseInt(target_square)];
+                    this.position[parseInt(target_square)]=this.position[square];
+                    this.position[square]=0;
+                    
+                    var king_square=this.position.indexOf('k');
+                    var king_color=this.find_piece_color(king_square);
+
+                    loop1:
+
+                    for(var m=0;m<directions['check'].length;m++) {  
+
+                    loop2:
+
+                        for(var n=0;n<directions['check'][m].length;n++) {
+                            
+                            checkmate_check=king_square+directions['check'][m][n];
+
+                            if (this.position[checkmate_check]==0) { continue loop2; }
+
+                            if(this.position[checkmate_check]==1 ) { break loop2; } 
+
+                            attacking_piece_color=this.find_piece_color(checkmate_check);
+
+                            if( king_color === attacking_piece_color ) { break loop2; } //we found our own piece first
+
+                            if(
+                                (n<4 && this.position[checkmate_check]==='R')|| 
+                                (n>3 && n<8 && this.position[checkmate_check]==='B') ||
+                                (n<8 && this.position[checkmate_check]==='Q') || 
+                                (n>7 && this.position[checkmate_check]==='N')
+                            ){ 
+                                king_capture_found=true; 
+                                //m=n=15; //break the check for king capture;
+                                break loop1;
+                            
+                            }
+                        
+                            
+                        }
+            
+                     }
+
+                     //console.log(square);
+                     //console.log(target_square);
+
+                    this.position[square]=this.position[parseInt(target_square)];
+                    this.position[parseInt(target_square)]=old_target;
+                     
+                if(!king_capture_found){
+
                 (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
+
+                }
                 
                 if( /*moving_piece_color !== target_piece_color && */!target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
             
@@ -247,7 +303,7 @@ board.find_valid_moves=function(){
     }   
 
     //  make all moves and if king is checked remove from valid moves 
-
+/*
     var final_moves=Object.keys(this.valid_moves[0]);
 
     for(var i=0;i<final_moves.length;i++){
@@ -263,10 +319,21 @@ board.find_valid_moves=function(){
          this.position[from]=0;
 
          var king_square=this.position.indexOf('k');
+         
+         for(var k=0;k<directions['k'].length;k++) {  
+            for(var l=0;l<8;l++){
+
+            }
+
+         }
+
+         this.position[parseInt(to)]=this.position[from];
+         this.position[from]=0;
+
          console.log(king_square);
 
     }
-}
+}*/
     //console.log(final_moves);
 /*
         for(var i=0;k<this.valid_moves[moving_piece_color].length;i++) { 
