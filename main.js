@@ -283,11 +283,8 @@ board.find_valid_moves=function(){
                         */
 
                             if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
-                                ( 
-                                    ( (directions['check'][m][n]===12 || directions['check'][m][n]===11)  && this.position[checkmate_check]==='P' && king_color===0  )  
-                                    || 
-                                    ( (directions['check'][m][n]===-12 || directions['check'][m][n]===-11)  && this.position[checkmate_check]==='p' && king_color===1  )  
-                                )|| 
+                                ( (this.position[king_square+9]==='P' || this.position[king_square+11]==='P') && king_color===0  )  || 
+                                ( (this.position[king_square-9]==='p' || this.position[king_square-11]==='p') && king_color===1  ) || 
                                 (m<4 && ( (king_color===0 && this.position[checkmate_check]==='R') || (king_color===1 && this.position[checkmate_check]==='r') ) )|| 
                                 (m>3 && m<8 && ( (king_color===0 && this.position[checkmate_check]==='B') || (king_color===1 && this.position[checkmate_check]==='b') ) ) ||
                                 (m<8 && ( (king_color===0 && this.position[checkmate_check]==='Q') || (king_color===1 && this.position[checkmate_check]==='q') ) ) || 
