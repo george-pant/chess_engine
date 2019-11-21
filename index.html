@@ -117,7 +117,9 @@ Move :<span class="move_number"></span>
             var piece='';
             var piece_color='';
 
-            $(".info .moving_player").text(color + status);
+            var status_message=(window.board.game_status==3)?'Stalemate':color+status;
+            
+            $(".info .moving_player").text(status_message);
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
 
             $(".chessboard div").removeClass("active inactive target");

@@ -1,4 +1,9 @@
 //(function(){
+    if (typeof window === 'undefined'){
+    var {
+        performance
+      } = require('perf_hooks');
+    }
 
 var squares = [];
 
@@ -45,9 +50,10 @@ const starting_position=[
 
 var board = {};
 
-board.game_status=2                     //0 if white won 1 for black 2 for game in progress
+board.game_status=2                     //0 if white won 1 for black 2 for game in progress 3 for stalemate
 board.moving_player=0                   //0 for white player 1 for black
 board.moves=[];                         //game moves
+board.temp_moves=[];
 board.valid_moves=[];                   //possible valid moves
 board.valid_moves[0]=[];                   //possible valid moves
 board.valid_moves[1]=[];                   //possible valid moves
@@ -128,8 +134,11 @@ board.move=function(from,to){
     this.moving_player= 1 - this.moving_player;     //change moving player
     this.find_valid_moves();                        //find valid moves for next move
 
-    if(this.valid_moves[this.moving_player].length===0){ 
-        this.game_status=this.moving_player= 1 - this.moving_player;
+    if(this.valid_moves[this.moving_player].length===0){ //Player has no valid move - checkmate or stalemate 
+
+        king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
+        this.game_status=this.attacked_square(king_square,1-this.moving_player)? 1 - this.moving_player :3; //if our king is attacked its a checkmate 
+
     }
 
     return true;
@@ -167,23 +176,25 @@ board.undo_move=function(){
 }
 
 board.move_random=function(){
+    //return true;
 
     //this.moving_player=this.moves.length%2==0?0:1;
-    var first_piece=Object.keys(this.valid_moves[this.moving_player])[0];
-    console.log(first_piece);
-    var first_to=this.valid_moves[this.moving_player][first_piece][0];
+    
+    //var first_piece=Object.keys(this.valid_moves[this.moving_player])[0];
+    //var first_to=this.valid_moves[this.moving_player][first_piece][0];
 
-/*
+
     var keys = Object.keys(this.valid_moves[this.moving_player]);
 
     var random_piece=keys[Math.floor(keys.length * Math.random())];
     var random_move=this.valid_moves[this.moving_player][random_piece][Math.floor(this.valid_moves[this.moving_player][random_piece].length * Math.random())];
     
     var from=parseInt(random_piece);
-    var to=random_move;*/
-
+    var to=random_move;
+/*
     var from=first_piece;
     var to=first_to;
+*/
 
     if(this.move(from,to)) return true;
 
@@ -196,9 +207,50 @@ board.find_piece_color=function(square){
     return (this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90)?1:0
 }
 
+board.attacked_square=function(square,attacking_player){
+   
+    var piece_color=1-attacking_player;
+
+    for(var m=0;m<directions['check'].length;m++) {  
+
+        for(var n=0;n<directions['check'][m].length;n++) {
+            
+            attack_check=square+directions['check'][m][n];
+
+            if (this.position[attack_check]==0) { continue; }
+
+            if(this.position[attack_check]==1 ) { break; } 
+
+            attacking_piece_color=this.find_piece_color(attack_check);
+
+            if( piece_color === attacking_piece_color ) { break; } //we found our own piece first
+
+            if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
+                ( (this.position[square+9]==='P' || this.position[square+11]==='P') && piece_color===0  )  || 
+                ( (this.position[square-9]==='p' || this.position[square-11]==='p') && piece_color===1  ) || 
+                (m<4 && ( (piece_color===0 && this.position[attack_check]==='R') || (piece_color===1 && this.position[attack_check]==='r') ) )|| 
+                (m>3 && m<8 && ( (piece_color===0 && this.position[attack_check]==='B') || (piece_color===1 && this.position[attack_check]==='b') ) ) ||
+                (m<8 && ( (piece_color===0 && this.position[attack_check]==='Q') || (piece_color===1 && this.position[attack_check]==='q') ) ) || 
+                (m>7 && ( (piece_color===0 && this.position[attack_check]==='N') || (piece_color===1 && this.position[attack_check]==='n') ) ) ||
+                (m<8 && n===0 && ( (this.position[attack_check]==='K' && piece_color===0 ) || (this.position[attack_check]==='k' && piece_color===1 ) ) )
+            ){ 
+                return true;
+
+            }else{
+                break; //non attacking enemy piece blocking the way 
+            }
+        
+            
+        }
+
+     }
+
+     return false;
+}
+
 
 board.find_valid_moves=function(){
-
+    
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
@@ -208,9 +260,6 @@ board.find_valid_moves=function(){
         
         var square=i+j;
         
-        if(square==94){ 
-            console.log(true);
-        }
         if (this.position[square]==0) { continue; }                                 //if empty square continue
             
         var piece=this.position[square];
@@ -243,76 +292,50 @@ board.find_valid_moves=function(){
 
                     if(piece==='k' || piece==='K'){ 
                         
-                        if( directions[piece][k][l]==-2 && ( this.castling_rights[moving_piece_color][0]!==true || this.position[target_square]!=0) ){ break; } //king side castle 
+                        //king side castle 
+                        if( directions[piece][k][l]==-2 &&                              //  if castle is attempted 
+                            (   this.castling_rights[moving_piece_color][0]!==true ||   //  we must have castling rights 
+                                this.position[target_square]!=0 ||   //  and the squares must be empty 
+                                this.attacked_square(square,1-this.moving_player) || this.attacked_square(square-1,1-this.moving_player) // and king and between squares should not be attacked
+                            ) ){ 
+                                break; 
+                            } 
                         
-                        if(directions[piece][k][l]==2 && ( this.castling_rights[moving_piece_color][1]!==true || this.position[target_square-1]!=0 || this.position[target_square]!=0  )) { break; }  //queen side castle 
+                        //queen side castle
+                        if(directions[piece][k][l]==2 && 
+                            ( this.castling_rights[moving_piece_color][1]!==true || 
+                              this.position[target_square-1]!=0 || 
+                              this.position[target_square]!=0 ||  this.position[target_square+1]!=0 || 
+                              this.attacked_square(square,1-this.moving_player) || this.attacked_square(square+1,1-this.moving_player) // and king and should not be attacked 
+                              )) { break; }  
 
                     }
-
-                    var king_capture_found=false;   //  make move temporarily and if king is checked break 
                     
+                    //we make the move temporarily to check if king is captured 
+
                     var old_target=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=this.position[square];
                     this.position[square]=0;
-                    //this.moving_player= 1 - this.moving_player; 
                     
                     var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
-                    var king_color=this.moving_player;
 
+                    //check if king is captured
+                    
+                    var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
 
-                    for(var m=0;m<directions['check'].length;m++) {  
-
-                        for(var n=0;n<directions['check'][m].length;n++) {
-                            
-                            checkmate_check=king_square+directions['check'][m][n];
-
-                            if (this.position[checkmate_check]==0) { continue; }
-
-                            if(this.position[checkmate_check]==1 ) { break; } 
-
-                            attacking_piece_color=this.find_piece_color(checkmate_check);
-
-                            if( king_color === attacking_piece_color ) { break; } //we found our own piece first
-
-                        /*    if(
-                                (n<4 && this.position[checkmate_check].toASCIILower==='r' ) || 
-                                (n>3 && this.position[checkmate_check].toASCIILower==='b' ) ||
-                                (n<8 && this.position[checkmate_check].toASCIILower==='q' ) || 
-                                (n>7 && this.position[checkmate_check].toASCIILower==='n' )
-                            ){ 
-                        */
-
-                            if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
-                                ( (this.position[king_square+9]==='P' || this.position[king_square+11]==='P') && king_color===0  )  || 
-                                ( (this.position[king_square-9]==='p' || this.position[king_square-11]==='p') && king_color===1  ) || 
-                                (m<4 && ( (king_color===0 && this.position[checkmate_check]==='R') || (king_color===1 && this.position[checkmate_check]==='r') ) )|| 
-                                (m>3 && m<8 && ( (king_color===0 && this.position[checkmate_check]==='B') || (king_color===1 && this.position[checkmate_check]==='b') ) ) ||
-                                (m<8 && ( (king_color===0 && this.position[checkmate_check]==='Q') || (king_color===1 && this.position[checkmate_check]==='q') ) ) || 
-                                (m>7 && ( (king_color===0 && this.position[checkmate_check]==='N') || (king_color===1 && this.position[checkmate_check]==='n') ) )
-                            ){ 
-                                king_capture_found=true; 
-                                m=n=15; //break the check for king capture;
-                            
-                            }else{
-                                break; //non attacking enemy piece blocking the way 
-                            }
-                        
-                            
-                        }
-            
-                     }
-
+                    //undo the move
+                    
                     this.position[square]=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=old_target;
-                    //this.moving_player= 1 - this.moving_player; 
-                     
-                if(!king_capture_found){
+                
 
+                if(!king_capture_found){
+                    
                 (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
 
                 }
                 
-                if( /*moving_piece_color !== target_piece_color && */target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
+                if( target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
             
                 }
             
@@ -323,59 +346,21 @@ board.find_valid_moves=function(){
     }   
 
 }
-    //  make all moves and if king is checked remove from valid moves 
-/*
-    var final_moves=Object.keys(this.valid_moves[0]);
-
-    for(var i=0;i<final_moves.length;i++){
-
-        for(var j=0;j<this.valid_moves[0][final_moves[i]].length;j++){
-
-         console.log(this.valid_moves[0][final_moves[i]][j]);
-
-         from=final_moves[i];
-         to=this.valid_moves[0][final_moves[i]][j];
-
-         this.position[parseInt(to)]=this.position[from];
-         this.position[from]=0;
-
-         var king_square=this.position.indexOf('k');
-         
-         for(var k=0;k<directions['k'].length;k++) {  
-            for(var l=0;l<8;l++){
-
-            }
-
-         }
-
-         this.position[parseInt(to)]=this.position[from];
-         this.position[from]=0;
-
-         console.log(king_square);
-
-    }
-}*/
-    //console.log(final_moves);
-/*
-        for(var i=0;k<this.valid_moves[moving_piece_color].length;i++) { 
-            this.position[parseInt(to)]=this.position[from];
-            this.position[from]=0;
-
-            this.castling_rights[0].indexOf(true)
-
-        }*/
-
+    
 
 
 board.initialize();
+
+
 /*
-var i=0;var t0 = performance.now();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-    while(i<100000){   
-      //console.lo                                                                                                                                                                                                                                                                                                                          g('Starting2..');
+var i=0;var t0 = performance.now();   
+
+    while(i<20000){   
+                                                                                                                                                                                                                                                                                                                             
       board.move_random();
       i++;
  
-     if(i%50==0){
+     if(board.game_status!=2 || i%50==0){
      board.initialize();  
      }
 
@@ -386,6 +371,36 @@ var i=0;var t0 = performance.now();
 
     console.log( moves_per_sec.toFixed(2) + " moves/second.");
 */
+
+var i=0;
+var games=0;
+var stats=[0,0,0,0];
+
+setInterval(function(){
+
+    board.move_random();
+    //update_board(board);
+
+    if(board.game_status!=2 || board.moves.length>200){
+        stats[board.game_status]++;
+        games++;
+        board.initialize();
+    }
+
+    if(games%10==0){ 
+        console.log('Played '+ games);
+        console.log('White won '+stats[0]);
+        console.log('Black won '+stats[1]);
+        console.log('No winner '+stats[2]);
+        console.log('Total Moves '+ i);
+    };
+    
+}, 0);
+
+
+
+
+    //console.log(i);
 
 
 
