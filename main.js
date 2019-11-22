@@ -4,7 +4,7 @@
 
 var squares = [];
 
-var piece = { 'P': 100, 'N': 300, 'B': 300, 'R': 500, 'Q': 900, 'K': 60000 }
+var piece_values = { 'p':10, 'P': 10, 'n':30 ,'N': 30, 'b':30, 'B': 30, 'r':50, 'R': 50, 'q': 90, 'Q':90, 'k':1000, 'K': 1000 }
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
@@ -19,15 +19,6 @@ directions["check"]=directions["q"].concat(directions["n"]);
 
 var history=[];
 
-// map our array indexes to chess board squares Ue.g a1->21,a2->31,...
-/*
-for(var i=1;i<9;i++){ 
-
-    for(var j=1;j<9;j++){ 
-        
-        squares[String.fromCharCode(96+i)+j.toString()] = 28-(i-1)+((j-1)*10); 
-    } 
-}*/
 
 const starting_position=[
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
@@ -50,7 +41,7 @@ var board = {};
 board.game_status=2                     //0 if white won 1 for black 2 for game in progress 3 for stalemate
 board.moving_player=0                   //0 for white player 1 for black
 board.moves=[];                         //game moves
-board.temp_moves=[];
+board.en_pasan=false;                   //en pasan square
 board.valid_moves=[];                   //possible valid moves
 board.valid_moves[0]=[];                   //possible valid moves
 board.valid_moves[1]=[];                   //possible valid moves
@@ -62,6 +53,7 @@ board.initialize=function(){
     this.game_status=2; 
     this.moving_player=0;                   //0 for white player 1 for black
     this.moves=[];                         //game moves
+    this.en_pasan=false;
     this.valid_moves=[];                   //possible valid moves
     this.position=starting_position.concat();
     this.history=[];
@@ -74,7 +66,7 @@ board.initialize=function(){
 board.move=function(from,to){
 
     this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
-
+   
     if(this.valid_moves[this.moving_player][from].includes(to)){
     
     //keep the current state in history
@@ -85,14 +77,33 @@ board.move=function(from,to){
             castling_rights:this.castling_rights.slice(),
             moves:this.moves.slice()
             
-        });               
+        }); 
 
     //make the move in board
     this.position[parseInt(to)]=this.position[from];
     this.position[from]=0;
  
-    if(typeof to==='string') { this.position[parseInt(to)]=to[to.length-1] }  //pawn promotions
-     
+    if(typeof to==='string') { 
+        
+        if(parseInt(to)===this.en_pasan){ 
+            var attacked_pawn=this.moving_player?10:-10;
+            this.position[parseInt(to)+attacked_pawn]=0;    
+        }
+        else{
+        this.position[parseInt(to)]=to[to.length-1] //pawn promotions
+        }  
+    }
+
+    this.en_pasan=false; 
+
+    if( from>30 && from<39 && to-from===20 && this.position[to]==='p' && (this.position[to-1]==='P' || this.position[to+1]==='P') ){
+        this.en_pasan=to-10;
+    }
+
+    if(from>80 && from<89 && from-to===20 && this.position[to]==='P' && (this.position[to-1]==='p' || this.position[to+1]==='p')){
+        this.en_pasan=to+10;
+    }
+
     if(from===24 && to===22 && this.castling_rights[0][0]===true){
         this.position[23]='r';
         this.position[21]=0;
@@ -142,6 +153,7 @@ board.move=function(from,to){
         this.game_status=this.attacked_square(king_square,1-this.moving_player)? 1 - this.moving_player :3; //if our king is attacked its a checkmate 
 
     }
+    
 
     return true;
 
@@ -162,12 +174,14 @@ board.undo_move=function(){
     this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
     this.moves=previous.moves.concat(); 
-    
+    this.moving_player= 1 - this.moving_player;     //change moving player
+    this.game_status=2;
+    /*
     if(this.game_status==2){
         this.moving_player= 1 - this.moving_player;
     }else{  
     this.game_status=2;
-    }
+    }*/
 
     this.find_valid_moves();
 
@@ -250,21 +264,14 @@ board.attacked_square=function(square,attacking_player){
      return false;
 }
 
-
 board.find_valid_moves=function(){
     
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
-    /*for(var i=21;i<92;i=i+10){      // iterate all boards squares
+   for ( var square=21;square<99;square++){    // iterate all boards squares
 
-        for(var j=0;j<8;j++){
-        
-        var square=i+j;
-        */
-    for ( var square=21;square<92;square++){    // iterate all boards squares
-
-        if (this.position[square]==0 || this.position[square]==1 ) { continue; }                                 //if empty square continue
+        if (this.position[square]==0 || this.position[square]==1 ) { continue; }     //if empty square or outside board continue
             
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
@@ -285,13 +292,20 @@ board.find_valid_moves=function(){
                 
                 if (piece==='p' || piece==='P'){                                         //pawn rules
 
-                    if( (square-target_square)%10!==0 && this.position[target_square]==0 ){ continue; } //cannot capture in empty squares
+                    //cannot capture in empty squares unless its an en pasan square
+                    if( (square-target_square)%10!==0 && this.position[target_square]==0 && target_square!==this.en_pasan ){ continue; } 
                     
-                    if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }    //and cannot go forward when they are blocked
-                
-                    if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } //if pawns are not in the first row they cannot move two squares
+                    //and cannot go forward when they are blocked
+                    if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }    
                     
-                    if (piece==='p' && target_square>90) { target_square+='q' } if (piece==='P' && target_square<29 ) { target_square+='Q' } //auto promote to queen
+                    //if pawns are not in the first row they cannot move two squares
+                    if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } 
+                    
+                    if(this.en_pasan && target_square===this.en_pasan){ target_square+='_';} //en pasan
+
+                    //auto promote to queen
+                    if (piece==='p' && target_square>90) { target_square+='q'; } if (piece==='P' && target_square<29 ) { target_square+='Q'; } //auto promote to queen
+                    
                 }
                 
                     if(piece==='k' || piece==='K'){ 
@@ -321,17 +335,21 @@ board.find_valid_moves=function(){
                     this.position[parseInt(target_square)]=this.position[square];
                     this.position[square]=0;
                     
+                    // en passant temporary fix
+                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=0; }
+
                     var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
 
                     //check if king is captured
                     
-                   var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
+                    var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
 
                     //undo the move
                     
                     this.position[square]=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=old_target;
-                
+                    // en passant temporary fix
+                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
 
                 if(!king_capture_found){
                     
@@ -342,21 +360,41 @@ board.find_valid_moves=function(){
                 if( target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
             
                 }
-            
-         //   }
 
         }
+    
         
     }   
 
 }
     
+board.evaluate_board=function(){
 
+    var evaluation=0;
+    
+    for ( var square=21;square<99;square++){    // iterate all boards squares
+
+        if (this.position[square]==0 || this.position[square]==1 ) { continue; }
+        
+        if( this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90) { 
+            evaluation-=piece_values[this.position[square]];
+        }
+        else
+        {
+            evaluation+=piece_values[this.position[square]];
+        }
+
+        
+        
+    }
+
+    return evaluation;
+}
 
 board.initialize();
 
 
-
+/*
 var i=0;var tstart = performance.now();   
 
     while(i<10000){   
@@ -365,7 +403,8 @@ var i=0;var tstart = performance.now();
       i++;
      // var t1 = performance.now();
     //  console.log(t1 - t0);
-     if(board.game_status!=2 || i%50==0){
+     if(board.game_status!=2 || i%100==0){
+  
      board.initialize();  
      }
 
@@ -376,33 +415,46 @@ var i=0;var tstart = performance.now();
 
     console.log( moves_per_sec.toFixed(2) + " moves/second.");
 
+*/
+// random games
 
-
-/* random games
 var i=0;
 var games=0;
 var stats=[0,0,0,0];
+var tstart = performance.now();
 
 setInterval(function(){
 
     board.move_random();
-    //update_board(board);
-
-    if(board.game_status!=2 || board.moves.length>200){
-        stats[board.game_status]++;
-        games++;
-        board.initialize();
+    i++;
+    if (typeof window !== 'undefined'){
+    update_board(board);
     }
 
-    if(games%10==0){ 
-        console.log('Played '+ games);
-        console.log('White won '+stats[0]);
-        console.log('Black won '+stats[1]);
-        console.log('No winner '+stats[2]);
-        console.log('Total Moves '+ i);
-    };
+    if(board.game_status!=2 || board.moves.length>240){
+        var tstop = performance.now();
+        stats[board.game_status]++;
+        games++;
+
+        if(games%100===0 ){ 
+
+            console.log('Played '+ games);
+            console.log('White won '+stats[0]);
+            console.log('Black won '+stats[1]);
+            console.log('No winner '+stats[2]);
+            console.log('Total Moves '+ i);
+            var moves_per_sec=i/((tstop - tstart)/1000);
+            console.log( moves_per_sec.toFixed(2) + " moves/second.");
+
+        };
+
+        board.initialize();
+
+
+    }
+
     
-}, 0);*/
+}, 0);
 
 
 

@@ -15,9 +15,13 @@
   integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
   crossorigin="anonymous"></script>
  
-  <script src="main.min.js"></script>
+  <script src="main.js"></script>
 
 </head>
+
+<div class="evaluation">
+
+</div>
 
 <div class="info">
 <div>
@@ -113,13 +117,15 @@ Move :<span class="move_number"></span>
 
             var position=board.position;
             var color=(window.board.moving_player)?'Black':'White';
-            var status=(window.board.game_status==2)?' to play':' won';
+            var status=(window.board.game_status==2)?' to play':' Lost';
+            var evaluation=board.evaluate_board();
             var piece='';
             var piece_color='';
-
-            var status_message=(window.board.game_status==3)?'Stalemate':color+status;
             
+            var status_message=(window.board.game_status==3)?'Stalemate':color+status;
+
             $(".info .moving_player").text(status_message);
+            $(".evaluation").text(evaluation);
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
 
             $(".chessboard div").removeClass("active inactive target");
