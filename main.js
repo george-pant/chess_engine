@@ -1,9 +1,6 @@
 //(function(){
     if (typeof window === 'undefined'){
-    var {
-        performance
-      } = require('perf_hooks');
-    }
+        var { performance } = require('perf_hooks'); }
 
 var squares = [];
 
@@ -23,14 +20,14 @@ directions["check"]=directions["q"].concat(directions["n"]);
 var history=[];
 
 // map our array indexes to chess board squares Ue.g a1->21,a2->31,...
+/*
+for(var i=1;i<9;i++){ 
 
-for(let i=1;i<9;i++){ 
-
-    for(let j=1;j<9;j++){ 
+    for(var j=1;j<9;j++){ 
         
         squares[String.fromCharCode(96+i)+j.toString()] = 28-(i-1)+((j-1)*10); 
     } 
-}
+}*/
 
 const starting_position=[
     1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
@@ -93,7 +90,7 @@ board.move=function(from,to){
     //make the move in board
     this.position[parseInt(to)]=this.position[from];
     this.position[from]=0;
-    
+ 
     if(typeof to==='string') { this.position[parseInt(to)]=to[to.length-1] }  //pawn promotions
      
     if(from===24 && to===22 && this.castling_rights[0][0]===true){
@@ -132,7 +129,12 @@ board.move=function(from,to){
 
     this.moves.push([from,to]);                     //keep track of moves,
     this.moving_player= 1 - this.moving_player;     //change moving player
+
+    //var t0 = performance.now();
     this.find_valid_moves();                        //find valid moves for next move
+    //var t1 = performance.now();
+
+    //console.log(t1-t0);
 
     if(this.valid_moves[this.moving_player].length===0){ //Player has no valid move - checkmate or stalemate 
 
@@ -143,7 +145,7 @@ board.move=function(from,to){
 
     return true;
 
-    }else{
+   }else{
         console.log('invalid move from '+from+' to '+to);
         board.print();
         board.status();
@@ -254,13 +256,15 @@ board.find_valid_moves=function(){
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
-    for(var i=21;i<92;i=i+10){      // iterate all boards squares
+    /*for(var i=21;i<92;i=i+10){      // iterate all boards squares
 
         for(var j=0;j<8;j++){
         
         var square=i+j;
-        
-        if (this.position[square]==0) { continue; }                                 //if empty square continue
+        */
+    for ( var square=21;square<92;square++){    // iterate all boards squares
+
+        if (this.position[square]==0 || this.position[square]==1 ) { continue; }                                 //if empty square continue
             
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
@@ -289,7 +293,7 @@ board.find_valid_moves=function(){
                     
                     if (piece==='p' && target_square>90) { target_square+='q' } if (piece==='P' && target_square<29 ) { target_square+='Q' } //auto promote to queen
                 }
-
+                
                     if(piece==='k' || piece==='K'){ 
                         
                         //king side castle 
@@ -321,7 +325,7 @@ board.find_valid_moves=function(){
 
                     //check if king is captured
                     
-                    var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
+                   var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
 
                     //undo the move
                     
@@ -339,7 +343,7 @@ board.find_valid_moves=function(){
             
                 }
             
-            }
+         //   }
 
         }
         
@@ -352,26 +356,29 @@ board.find_valid_moves=function(){
 board.initialize();
 
 
-/*
-var i=0;var t0 = performance.now();   
 
-    while(i<20000){   
-                                                                                                                                                                                                                                                                                                                             
+var i=0;var tstart = performance.now();   
+
+    while(i<10000){   
+     //   var t0 = performance.now();                                                                                                                                                                                                                                                                                                                       
       board.move_random();
       i++;
- 
+     // var t1 = performance.now();
+    //  console.log(t1 - t0);
      if(board.game_status!=2 || i%50==0){
      board.initialize();  
      }
 
     }
-    var t1 = performance.now();
-    var moves_per_sec=i/((t1 - t0)/1000);
+    var tstop = performance.now();
+    var moves_per_sec=i/((tstop - tstart)/1000);
 
 
     console.log( moves_per_sec.toFixed(2) + " moves/second.");
-*/
 
+
+
+/* random games
 var i=0;
 var games=0;
 var stats=[0,0,0,0];
@@ -395,7 +402,7 @@ setInterval(function(){
         console.log('Total Moves '+ i);
     };
     
-}, 0);
+}, 0);*/
 
 
 
@@ -421,7 +428,7 @@ chess_worker.onmessage = function(e) {
         var t1 = performance.now();
         console.log("100000 " + 100000/((t1 - t0)*1000) + " moves/second.");
         var t0 = performance.now(); 
-    }*/
+    }
 
     
 
@@ -437,27 +444,6 @@ board.status();
 
 
 
-/*
-board.move_algebraic("e2","e4");
-board.print();
-board.status();
-
-
-board.move_algebraic("e7","e5");
-board.print();
-board.status();
-
-board.move_algebraic("d1","h5");
-board.print();
-board.status();
-
-board.find_valid_moves();
-console.log(board.valid_moves);
-*/
-//var random_piece = board.valid_moves[moving_player][Math.floor(Math.random()*board.valid_moves[moving_player].length)];
-
-
-//console.log(pieces['B']);
 
 /*
 board.print=function(){
@@ -488,15 +474,3 @@ board.status=function(){
     console.log("move "+this.moves.length);
     console.log(this.moves);
 }*/
-
-/*
-
-board.move_algebraic=function(from,to){
-
-    if(this.move(squares[from],squares[to])) {
-        return true;
-    }
-
-    return false;
-}
-*/
