@@ -209,6 +209,10 @@ Move :<span class="move_number"></span>
             board.move(from,to);
             update_board(board);
 
+            var best_move=board.find_best_move();
+            board.move(best_move[0][0],best_move[0][1]);
+            update_board(board);
+
             return;
 
             }
