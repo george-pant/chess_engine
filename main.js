@@ -289,7 +289,7 @@ board.find_valid_moves=function(){
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
 
-        if(moving_piece_color!=this.moving_player) { continue; }
+    //    if(moving_piece_color!=this.moving_player) { continue; }
 
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
@@ -367,7 +367,7 @@ board.find_valid_moves=function(){
                 if(!king_capture_found){
                     
                 (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
-
+                    
                 }
                 
                 if( target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
@@ -383,79 +383,71 @@ board.find_valid_moves=function(){
     
 board.evaluate_board=function(){
 
+    var center_squares=[[54,55,64,65],[44,45,74,75,53,56,63,66]];
+
     var evaluation=0;
-    
+    var attacking_squares=[];
+    attacking_squares[0]=[];
+    attacking_squares[1]=[];
+
     for ( var square=21;square<99;square++){    // iterate all boards squares
 
+        
         if (this.position[square]==0 || this.position[square]==1 ) { continue; }
         
+        var piece=this.position[square];
+        var attacking_piece_color= this.find_piece_color(square);
+
+        
         if( this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90) { 
-            evaluation-=piece_values[this.position[square]];
+            evaluation-=piece_values[piece];
         }
         else
         {
-            evaluation+=piece_values[this.position[square]];
+            evaluation+=piece_values[piece];
         }
 
+        for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
+
+            if( (piece==='p' || piece==='P') && k===0) continue;
+
+            for(var l=0;l<directions[piece][k].length;l++) {
+
+                attacked_square=parseInt(square)+parseInt(directions[piece][k][l]);
+                attacked_piece_color=this.find_piece_color(attacked_square);
+
+                if(this.position[attacked_square]==1 ) { break; }  
+
+                if( attacking_piece_color === attacked_piece_color ) { break; }  
+
+                attacking_squares[attacking_piece_color].push(attacked_square);
+
+                if( attacking_piece_color===0  ) { 
+                    console.log(center_squares[0]);
+                                        evaluation+=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
+
+                }
+                else
+                {
+                    evaluation-=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
+                }
+
+                }
         
-        
-    }
+            }
+
+        }
+
+    console.log(attacking_squares);
 
     return evaluation;
 }
-
-random_games=function(board_copy,games_to_play,depth){
-    
-    var starting_pos=JSON.parse(JSON.stringify(board_copy));
-    
-    var eval=0;
-    var current_eval=0;
-    var games=0;
-    var i=0;
-    
-        while(games<games_to_play){   
-         //   var t0 = performance.now();                                                                                                                                                                                                                                                                                                                       
-         board_copy.move_random();
-          i++;
-         // var t1 = performance.now();
-        //  console.log(t1 - t0);
-         if(board_copy.game_status!=2 || i%(depth*2)==0){
-         
-           if(board_copy.game_status!=2)  break;
-         games++;
-         current_eval=board_copy.evaluate_board();
-         
-         eval+=current_eval;
-         current_eval=0;    
-        /*
-         if(board.status===0 || current_eval>29){
-            white_won++;
-         }else if( board.status===1 || current_eval<-29){
-            black_won++;
-         }else{
-             draws++;
-         }*/
-    
-         board_copy.set(starting_pos);  
-        // console.log(board_copy);
-         }
-    
-        }
-       // var tstop = performance.now();
-       // var moves_per_sec=i/((tstop - tstart)/1000);
-       //console.log('eval:'+' '+eval/games);
-       return eval/games;
-        //console.log( moves_per_sec.toFixed(2) + " moves/second.");
-        //console.log("White_won:"+white_won);
-        //console.log("Black_won:"+black_won);
-       // console.log("Draws"+draws);
-    }
 
 board.find_best_move=function(){
 
     var best_move=[];
     var best_eval=2000;
-    var candidate_moves = Object.keys(board.valid_moves[board.moving_player]);
+    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
 
     for (var j=0;j<candidate_moves.length;j++){
     
@@ -468,11 +460,12 @@ board.find_best_move=function(){
         var to=board.valid_moves[board.moving_player][from][h];
         //console.log(from+'-'+to);
         //console.log(from+'_'+to);
-        var board_copy = jQuery.extend(true, {}, board);
+        //var board_copy = jQuery.extend(true, {}, board);
         //console.log(board_copy);
 
-        board_copy.move(from,to);
-        current_eval=random_games(board_copy,10000,6);
+        this.move(from,to);
+        current_eval=this.evaluate_board();
+        this.undo_move();   
         //console.log(from+' '+to+' '+current_eval+' '+best_eval);
        // console.log('current_eval:'+current_eval);
        // console.log('best_eval:'+best_eval);
