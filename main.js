@@ -225,7 +225,6 @@ board.move_random=function(){
     var from=first_piece;
     var to=first_to;
 */
-
     if(this.move(from,to)) return [from,to];
 
     return false;
@@ -422,8 +421,10 @@ random_games=function(board_copy,games_to_play,depth){
         //  console.log(t1 - t0);
          if(board_copy.game_status!=2 || i%(depth*2)==0){
          
+           if(board_copy.game_status!=2)  break;
          games++;
          current_eval=board_copy.evaluate_board();
+         
          eval+=current_eval;
          current_eval=0;    
         /*
@@ -442,7 +443,8 @@ random_games=function(board_copy,games_to_play,depth){
         }
        // var tstop = performance.now();
        // var moves_per_sec=i/((tstop - tstart)/1000);
-       return eval;
+       //console.log('eval:'+' '+eval/games);
+       return eval/games;
         //console.log( moves_per_sec.toFixed(2) + " moves/second.");
         //console.log("White_won:"+white_won);
         //console.log("Black_won:"+black_won);
@@ -470,20 +472,19 @@ board.find_best_move=function(){
         //console.log(board_copy);
 
         board_copy.move(from,to);
-        current_eval=random_games(board_copy,100,6);
-
+        current_eval=random_games(board_copy,10000,6);
+        //console.log(from+' '+to+' '+current_eval+' '+best_eval);
        // console.log('current_eval:'+current_eval);
        // console.log('best_eval:'+best_eval);
        // console.log(best_move);
         if(current_eval<best_eval) { 
-            //console.log('test');
             best_eval=current_eval;
-            best_move.push([from,to]);
+            best_move=[from,to];
             }
         }
 
     }
-    
+    //console.log(best_move);
     return best_move;
 }
 

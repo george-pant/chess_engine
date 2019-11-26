@@ -210,7 +210,9 @@ Move :<span class="move_number"></span>
             update_board(board);
 
             var best_move=board.find_best_move();
-            board.move(best_move[0][0],best_move[0][1]);
+            //console.log(best_move);
+            //console.log(board);
+            board.move(parseInt(best_move[0]),parseInt(best_move[1]));
             update_board(board);
 
             return;
