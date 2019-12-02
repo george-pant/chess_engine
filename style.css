@@ -6,11 +6,19 @@
     margin:0 auto;
 }
 
+/*
 .evaluation{
     position:absolute;
     top:10px;
     left:10px;
 }
+
+.total_evaluations{
+    position:absolute;
+    top:40px;
+    left:10px;
+}*/
+
 .info{
     float: right;
     display: block;

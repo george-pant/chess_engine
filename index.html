@@ -19,8 +19,16 @@
 
 </head>
 
-<div class="evaluation">
+<div>
+Evaluation:<span class="evaluation"></span>
+</div>
 
+<div>
+Total Evaluations:<span class="total_evaluations"></span>
+</div>
+
+<div>
+Evaluations per second:<span class="evaluations_per_second"></span>
 </div>
 
 <div class="info">
@@ -125,7 +133,11 @@ Move :<span class="move_number"></span>
             var status_message=(window.board.game_status==3)?'Stalemate':color+status;
 
             $(".info .moving_player").text(status_message);
+
             $(".evaluation").text(evaluation);
+            $(".total_evaluations").text(board.total_evaluations);
+            $(".evaluations_per_second").text(board.evaluations_per_second.toFixed(2));
+
             $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
 
             $(".chessboard div").removeClass("active inactive target");
@@ -210,9 +222,11 @@ Move :<span class="move_number"></span>
             update_board(board);
 
             var best_move=board.find_best_move();
-            //console.log(best_move);
-            //console.log(board);
-            board.move(parseInt(best_move[0]),parseInt(best_move[1]));
+            
+            if(best_move.length>0){
+            board.move(best_move[0],best_move[1]);
+            }
+
             update_board(board);
 
             return;

@@ -38,6 +38,8 @@ const starting_position=[
 
 var board = {};
 
+board.total_evaluations=0;
+board.evaluations_per_second=0;
 board.game_status=2                     //0 if white won 1 for black 2 for game in progress 3 for stalemate
 board.moving_player=0                   //0 for white player 1 for black
 board.moves=[];                         //game moves
@@ -153,11 +155,7 @@ board.move=function(from,to){
     this.moves.push([from,to]);                     //keep track of moves,
     this.moving_player= 1 - this.moving_player;     //change moving player
 
-    //var t0 = performance.now();
     this.find_valid_moves();                        //find valid moves for next move
-    //var t1 = performance.now();
-
-    //console.log(t1-t0);
 
     if(this.valid_moves[this.moving_player].length===0){ //Player has no valid move - checkmate or stalemate 
 
@@ -422,10 +420,9 @@ board.evaluate_board=function(){
 
                 attacking_squares[attacking_piece_color].push(attacked_square);
 
-                if( attacking_piece_color===0  ) { 
-                    console.log(center_squares[0]);
-                                        evaluation+=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
-
+                if( attacking_piece_color===0  )
+                { 
+                    evaluation+=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
                 }
                 else
                 {
@@ -438,12 +435,81 @@ board.evaluate_board=function(){
 
         }
 
-    console.log(attacking_squares);
-
     return evaluation;
 }
 
+board.minmax=function(depth,alpha,beta,isMax){
+
+    var best_move=0;
+    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
+
+    if(depth===0){
+        this.total_evaluations++;
+        return this.evaluate_board();
+    }
+
+    if(isMax){
+
+        best_move=-9999;   
+
+        for (var j=0;j<candidate_moves.length;j++){
+
+            var from=candidate_moves[j];
+
+            for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
+
+                var to=board.valid_moves[board.moving_player][from][h];
+                
+                this.move(from,to);
+                best_move=Math.max(best_move, board.minmax(depth - 1, alpha, beta, !isMax));
+                this.undo_move();
+
+                alpha = alpha>best_move?alpha:best_move;
+
+                if (beta <= alpha) {
+                   return best_move;
+                }
+            }
+
+        }
+
+        return best_move;
+
+    }else{
+
+        best_move=9999; 
+
+        for (var j=0;j<candidate_moves.length;j++){
+
+            var from=candidate_moves[j];
+
+            for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
+
+                var to=board.valid_moves[board.moving_player][from][h];
+                
+                this.move(from,to);
+                best_move=Math.min(best_move, board.minmax(depth - 1, alpha, beta,  !isMax));
+                this.undo_move();
+
+                beta = beta<best_move?beta:best_move
+
+                if (beta <= alpha) {
+                   return best_move;
+                }
+
+            }
+
+        }
+
+        return best_move;
+
+    }
+
+}
+
 board.find_best_move=function(){
+
+    var tstart = performance.now();
 
     var best_move=[];
     var best_eval=2000;
@@ -452,24 +518,16 @@ board.find_best_move=function(){
     for (var j=0;j<candidate_moves.length;j++){
     
         var from=candidate_moves[j]; 
-        
-        //console.log(from);
 
         for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
     
         var to=board.valid_moves[board.moving_player][from][h];
-        //console.log(from+'-'+to);
-        //console.log(from+'_'+to);
-        //var board_copy = jQuery.extend(true, {}, board);
-        //console.log(board_copy);
+        
 
         this.move(from,to);
-        current_eval=this.evaluate_board();
+        current_eval=this.minmax(3,-9999,9999,true);
         this.undo_move();   
-        //console.log(from+' '+to+' '+current_eval+' '+best_eval);
-       // console.log('current_eval:'+current_eval);
-       // console.log('best_eval:'+best_eval);
-       // console.log(best_move);
+        
         if(current_eval<best_eval) { 
             best_eval=current_eval;
             best_move=[from,to];
@@ -477,7 +535,10 @@ board.find_best_move=function(){
         }
 
     }
-    //console.log(best_move);
+    
+    var tstop = performance.now(); 
+    this.evaluations_per_second=this.total_evaluations/((tstop - tstart)/1000);
+
     return best_move;
 }
 
