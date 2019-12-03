@@ -525,7 +525,7 @@ board.find_best_move=function(){
         
 
         this.move(from,to);
-        current_eval=this.minmax(3,-9999,9999,true);
+        current_eval=this.minmax(2,-9999,9999,true);
         this.undo_move();   
         
         if(current_eval<best_eval) { 

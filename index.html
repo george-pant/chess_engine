@@ -32,6 +32,8 @@ Evaluations per second:<span class="evaluations_per_second"></span>
 </div>
 
 <div class="info">
+<div class="loader"></div>
+<div class="actions">
 <div>
 Status:<span class="moving_player"> </span>
 </div>
@@ -41,6 +43,7 @@ Move :<span class="move_number"></span>
 
 <div class="button undo-move">TAKEBACK MOVE</div>
 <div class="button new-game">NEW GAME</div>
+</div>
 </div>
 
 <div class="chessboard">
@@ -198,6 +201,11 @@ Move :<span class="move_number"></span>
         $(".chessboard div").click(function(){
             
             if (window.board.game_status!=2) return false;
+            if($(".info").hasClass('thinking')){
+                $(".chessboard div").removeClass('active inactive target');
+                $(this).addClass('inactive');       
+                return false;
+            }
 
             var clicked_square=$(this).data('square');
             var piece_color=$(this).data('piece-color');
@@ -220,7 +228,26 @@ Move :<span class="move_number"></span>
 
             board.move(from,to);
             update_board(board);
+            $(".info").addClass('thinking');
 
+            var worker = new Worker('worker.js');
+
+            worker.addEventListener('message', function(e) {
+            
+            //console.log('Worker said: ', e.data);
+            var best_move=e.data.best_move;
+            board.total_evaluations=e.data.total_evaluations;
+            board.evaluations_per_second=e.data.evaluations_per_second;
+
+            board.move(best_move[0],best_move[1]);
+            update_board(board);
+            $(".info").removeClass('thinking');    
+            }, false);
+
+
+            worker.postMessage(JSON.stringify(board));
+
+            /*
             var best_move=board.find_best_move();
             
             if(best_move.length>0){
@@ -228,7 +255,7 @@ Move :<span class="move_number"></span>
             }
 
             update_board(board);
-
+            */
             return;
 
             }

@@ -34,6 +34,23 @@
     color:black;
 }
 
+.loader{
+    display:none;
+    height: 100px;
+    width: 210px;
+    position:absolute;
+    background-image:url(preloader.gif);
+    background-size:cover;
+}
+
+.info.thinking .loader{
+    display:block;
+}
+
+.info.thinking .actions{
+      opacity:0.1;
+}
+
 .chessboard .square{
     cursor:pointer;
 }
