@@ -1,139 +1,139 @@
 <!doctype html>
 
 <html lang="en">
-<head>
-  <meta charset="utf-8">
+    <head>
+        <meta charset="utf-8">
 
-  <title>ENGINE</title>
-  <meta name="description" content="ENGINE">
-  <meta name="author" content="ENGINE">
+        <title>ENGINE</title>
+        <meta name="description" content="ENGINE">
+        <meta name="author" content="ENGINE">
 
-  <link rel="stylesheet" href="style.css?v=1.0">
+        <link rel="stylesheet" href="style.css?v=1.0">
 
-  <script
-  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-  integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
-  crossorigin="anonymous"></script>
- 
-  <script src="main.js"></script>
+        <script
+            src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+        crossorigin="anonymous"></script>
 
-</head>
+        <script src="main.js"></script>
 
-<div>
-Evaluation:<span class="evaluation"></span>
-</div>
+    </head>
 
-<div>
-Total Evaluations:<span class="total_evaluations"></span>
-</div>
+    <div>
+        Evaluation:<span class="evaluation"></span>
+    </div>
 
-<div>
-Evaluations per second:<span class="evaluations_per_second"></span>
-</div>
+    <div>
+        Total Evaluations:<span class="total_evaluations"></span>
+    </div>
 
-<div class="info">
-<div class="loader"></div>
-<div class="actions">
-<div>
-Status:<span class="moving_player"> </span>
-</div>
-<div>
-Move :<span class="move_number"></span>
-</div>
+    <div>
+        Evaluations per second:<span class="evaluations_per_second"></span>
+    </div>
 
-<div class="button undo-move">TAKEBACK MOVE</div>
-<div class="button new-game">NEW GAME</div>
-</div>
-</div>
+    <div class="info">
+        <div class="loader"></div>
+        <div class="actions">
+            <div>
+                Status:<span class="moving_player"> </span>
+            </div>
+            <div>
+                Move :<span class="move_number"></span>
+            </div>
 
-<div class="chessboard">
-    <!-- 1st -->
-    <div class="square white" data-square="98"></div>
-    <div class="square black" data-square="97"></div>
-    <div class="square white" data-square="96"></div>
-    <div class="square black" data-square="95"></div>
-    <div class="square white" data-square="94"></div>
-    <div class="square black" data-square="93"></div>
-    <div class="square white" data-square="92"></div>
-    <div class="square black" data-square="91"></div>
-    <!-- 2nd -->
-    <div class="square black" data-square="88"></div>
-    <div class="square white" data-square="87"></div>
-    <div class="square black" data-square="86"></div>
-    <div class="square white" data-square="85"></div>
-    <div class="square black" data-square="84"></div>
-    <div class="square white" data-square="83"></div>
-    <div class="square black" data-square="82"></div>
-    <div class="square white" data-square="81"></div>
-    <!-- 3th -->
-    <div class="square white" data-square="78"></div>
-    <div class="square black" data-square="77"></div>
-    <div class="square white" data-square="76"></div>
-    <div class="square black" data-square="75"></div>
-    <div class="square white" data-square="74"></div>
-    <div class="square black" data-square="73"></div>
-    <div class="square white" data-square="72"></div>
-    <div class="square black" data-square="71"></div>
-    <!-- 4st -->
-    <div class="square black" data-square="68"></div>
-    <div class="square white" data-square="67"></div>
-    <div class="square black" data-square="66"></div>
-    <div class="square white" data-square="65"></div>
-    <div class="square black" data-square="64"></div>
-    <div class="square white" data-square="63"></div>
-    <div class="square black" data-square="62"></div>
-    <div class="square white" data-square="61"></div>
-    <!-- 5th -->
-    <div class="square white" data-square="58"></div>
-    <div class="square black" data-square="57"></div>
-    <div class="square white" data-square="56"></div>
-    <div class="square black" data-square="55"></div>
-    <div class="square white" data-square="54"></div>
-    <div class="square black" data-square="53"></div>
-    <div class="square white" data-square="52"></div>
-    <div class="square black" data-square="51"></div>
-    <!-- 6th -->
-    <div class="square black" data-square="48"></div>
-    <div class="square white" data-square="47"></div>
-    <div class="square black" data-square="46"></div>
-    <div class="square white" data-square="45"></div>
-    <div class="square black" data-square="44"></div>
-    <div class="square white" data-square="43"></div>
-    <div class="square black" data-square="42"></div>
-    <div class="square white" data-square="41"></div>
-    <!-- 7th -->
-    <div class="square white" data-square="38"></div>
-    <div class="square black" data-square="37"></div>
-    <div class="square white" data-square="36"></div>
-    <div class="square black" data-square="35"></div>
-    <div class="square white" data-square="34"></div>
-    <div class="square black" data-square="33"></div>
-    <div class="square white" data-square="32"></div>
-    <div class="square black" data-square="31"></div>
-    <!-- 8th -->
-    <div class="square black" data-square="28"></div>
-    <div class="square white" data-square="27"></div>
-    <div class="square black" data-square="26"></div>
-    <div class="square white" data-square="25"></div>
-    <div class="square black" data-square="24"></div>
-    <div class="square white" data-square="23"></div>
-    <div class="square black" data-square="22"></div>
-    <div class="square white" data-square="21"></div>
+            <div class="button undo-move">TAKEBACK MOVE</div>
+            <div class="button new-game">NEW GAME</div>
+        </div>
+    </div>
+
+    <div class="chessboard">
+        <!-- 1st -->
+        <div class="square white" data-square="98"></div>
+        <div class="square black" data-square="97"></div>
+        <div class="square white" data-square="96"></div>
+        <div class="square black" data-square="95"></div>
+        <div class="square white" data-square="94"></div>
+        <div class="square black" data-square="93"></div>
+        <div class="square white" data-square="92"></div>
+        <div class="square black" data-square="91"></div>
+        <!-- 2nd -->
+        <div class="square black" data-square="88"></div>
+        <div class="square white" data-square="87"></div>
+        <div class="square black" data-square="86"></div>
+        <div class="square white" data-square="85"></div>
+        <div class="square black" data-square="84"></div>
+        <div class="square white" data-square="83"></div>
+        <div class="square black" data-square="82"></div>
+        <div class="square white" data-square="81"></div>
+        <!-- 3th -->
+        <div class="square white" data-square="78"></div>
+        <div class="square black" data-square="77"></div>
+        <div class="square white" data-square="76"></div>
+        <div class="square black" data-square="75"></div>
+        <div class="square white" data-square="74"></div>
+        <div class="square black" data-square="73"></div>
+        <div class="square white" data-square="72"></div>
+        <div class="square black" data-square="71"></div>
+        <!-- 4st -->
+        <div class="square black" data-square="68"></div>
+        <div class="square white" data-square="67"></div>
+        <div class="square black" data-square="66"></div>
+        <div class="square white" data-square="65"></div>
+        <div class="square black" data-square="64"></div>
+        <div class="square white" data-square="63"></div>
+        <div class="square black" data-square="62"></div>
+        <div class="square white" data-square="61"></div>
+        <!-- 5th -->
+        <div class="square white" data-square="58"></div>
+        <div class="square black" data-square="57"></div>
+        <div class="square white" data-square="56"></div>
+        <div class="square black" data-square="55"></div>
+        <div class="square white" data-square="54"></div>
+        <div class="square black" data-square="53"></div>
+        <div class="square white" data-square="52"></div>
+        <div class="square black" data-square="51"></div>
+        <!-- 6th -->
+        <div class="square black" data-square="48"></div>
+        <div class="square white" data-square="47"></div>
+        <div class="square black" data-square="46"></div>
+        <div class="square white" data-square="45"></div>
+        <div class="square black" data-square="44"></div>
+        <div class="square white" data-square="43"></div>
+        <div class="square black" data-square="42"></div>
+        <div class="square white" data-square="41"></div>
+        <!-- 7th -->
+        <div class="square white" data-square="38"></div>
+        <div class="square black" data-square="37"></div>
+        <div class="square white" data-square="36"></div>
+        <div class="square black" data-square="35"></div>
+        <div class="square white" data-square="34"></div>
+        <div class="square black" data-square="33"></div>
+        <div class="square white" data-square="32"></div>
+        <div class="square black" data-square="31"></div>
+        <!-- 8th -->
+        <div class="square black" data-square="28"></div>
+        <div class="square white" data-square="27"></div>
+        <div class="square black" data-square="26"></div>
+        <div class="square white" data-square="25"></div>
+        <div class="square black" data-square="24"></div>
+        <div class="square white" data-square="23"></div>
+        <div class="square black" data-square="22"></div>
+        <div class="square white" data-square="21"></div>
     </div>
 
 
     <script>
-    
-    function update_board(board){
 
-            var position=board.position;
-            var color=(window.board.moving_player)?'Black':'White';
-            var status=(window.board.game_status==2)?' to play':' Lost';
-            var evaluation=board.evaluate_board();
-            var piece='';
-            var piece_color='';
-            
-            var status_message=(window.board.game_status==3)?'Stalemate':color+status;
+        function update_board(board) {
+
+            var position = board.position;
+            var color = (window.board.moving_player) ? 'Black' : 'White';
+            var status = (window.board.game_status == 2) ? ' to play' : ' Lost';
+            var evaluation = board.evaluate_board();
+            var piece = '';
+            var piece_color = '';
+
+            var status_message = (window.board.game_status == 3) ? 'Stalemate' : color + status;
 
             $(".info .moving_player").text(status_message);
 
@@ -141,40 +141,52 @@ Move :<span class="move_number"></span>
             $(".total_evaluations").text(board.total_evaluations);
             $(".evaluations_per_second").text(board.evaluations_per_second.toFixed(2));
 
-            $(".info .move_number").text(Math.ceil(window.board.moves.length/2));
+            $(".info .move_number").text(Math.ceil(window.board.moves.length / 2));
 
             $(".chessboard div").removeClass("active inactive target");
-            $(".chessboard div").data('promotion-piece',null);
-            
-            for(var i=0;i<position.length;i++){
+            $(".chessboard div").data('promotion-piece', null);
 
-                if(position[i]!=1){
+            for (var i = 0; i < position.length; i++) {
 
-                    piece='';
-                    piece_color='';
-                    position[i]+='';
+                if (position[i] != 1) {
 
-                    if(position[i]=='p') piece='&#9817;';
-                    if(position[i]=='P') piece='&#9823;';
-                    if(position[i]=='k') piece='&#9812;';
-                    if(position[i]=='K') piece='&#9818;';
-                    if(position[i]=='q') piece='&#9813;';
-                    if(position[i]=='Q') piece='&#9819;';
-                    if(position[i]=='b') piece='&#9815;';
-                    if(position[i]=='B') piece='&#9821;';
-                    if(position[i]=='n') piece='&#9816;';
-                    if(position[i]=='N') piece='&#9822;';
-                    if(position[i]=='r') piece='&#9814;';
-                    if(position[i]=='R') piece='&#9820;';
+                    piece = '';
+                    piece_color = '';
+                    position[i] += '';
 
-                    if(position[i].charCodeAt() >= 65 && position[i].charCodeAt() <= 90){
-                        piece_color=1;
-                    }else if(position[i].charCodeAt() >= 92 && position[i].charCodeAt() <= 122){
-                        piece_color=0;
+                    if (position[i] == 'p')
+                        piece = '&#9817;';
+                    if (position[i] == 'P')
+                        piece = '&#9823;';
+                    if (position[i] == 'k')
+                        piece = '&#9812;';
+                    if (position[i] == 'K')
+                        piece = '&#9818;';
+                    if (position[i] == 'q')
+                        piece = '&#9813;';
+                    if (position[i] == 'Q')
+                        piece = '&#9819;';
+                    if (position[i] == 'b')
+                        piece = '&#9815;';
+                    if (position[i] == 'B')
+                        piece = '&#9821;';
+                    if (position[i] == 'n')
+                        piece = '&#9816;';
+                    if (position[i] == 'N')
+                        piece = '&#9822;';
+                    if (position[i] == 'r')
+                        piece = '&#9814;';
+                    if (position[i] == 'R')
+                        piece = '&#9820;';
+
+                    if (position[i].charCodeAt() >= 65 && position[i].charCodeAt() <= 90) {
+                        piece_color = 1;
+                    } else if (position[i].charCodeAt() >= 92 && position[i].charCodeAt() <= 122) {
+                        piece_color = 0;
                     }
 
-                    $('*[data-square="'+i+'"]').html(piece);
-                    $('*[data-square="'+i+'"]').data('piece-color',piece_color);
+                    $('*[data-square="' + i + '"]').html(piece);
+                    $('*[data-square="' + i + '"]').data('piece-color', piece_color);
 
 
                 }
@@ -182,114 +194,121 @@ Move :<span class="move_number"></span>
 
         }
 
-    $(document).ready(function(){
+        $(document).ready(function () {
 
-        console.log(board);
+            console.log(board);
 
-        update_board(board);
-
-        $(".new-game").click(function(){
-            board.initialize();
             update_board(board);
-        });
 
-        $(".undo-move").click(function(){
-            board.undo_move();
-            update_board(board);
-        });
+            $(".new-game").click(function () {
+                board.initialize();
+                update_board(board);
+            });
 
-        $(".chessboard div").click(function(){
-            
-            if (window.board.game_status!=2) return false;
-            if($(".info").hasClass('thinking')){
+            $(".undo-move").click(function () {
+                board.undo_move();
+                update_board(board);
+            });
+
+            $(".chessboard div").click(function () {
+
+                if (window.board.game_status != 2)
+                    return false;
+                if ($(".info").hasClass('thinking')) {
+                    $(".chessboard div").removeClass('active inactive target');
+                    $(this).addClass('inactive');
+                    return false;
+                }
+
+                var clicked_square = $(this).data('square');
+                var piece_color = $(this).data('piece-color');
+                var valid_piece_moves = board.valid_moves[board.moving_player][clicked_square];
+                var promotion_piece;
+
+                //if we click an already clicked square we unselect it
+                if ($(this).hasClass('active') || $(this).hasClass('inactive')) {
+                    $(".chessboard div").removeClass('active inactive target');
+                    return;
+                }
+
+                // of if its a target square we make the move
+                if ($(this).hasClass('target')) {
+
+                    var from = $(".chessboard div.active").data('square');
+                    var to = $(this).data('square');
+
+                    if (typeof $(this).data('promotion-piece') !== 'undefined') {
+                        to += $(this).data('promotion-piece');
+                    }
+
+                    board.move(from, to);
+                    update_board(board);
+                    $(".info").addClass('thinking');
+
+                    var worker = new Worker('main.js');
+
+                    worker.addEventListener('message', function (e) {
+
+                        //console.log('Worker said: ', e.data);
+                        var best_move = e.data.best_move;
+                        board.total_evaluations = e.data.total_evaluations;
+                        board.evaluations_per_second = e.data.evaluations_per_second;
+
+                        board.move(best_move[0], best_move[1]);
+                        update_board(board);
+                        $(".info").removeClass('thinking');
+                    }, false);
+
+
+                    worker.postMessage(JSON.stringify(board));
+
+                    /*
+                     var best_move=board.find_best_move();
+                     
+                     if(best_move.length>0){
+                     board.move(best_move[0],best_move[1]);
+                     }
+                     
+                     update_board(board);
+                     */
+                    return;
+
+                }
+
+                //we click a new square so we clear the board 
+
                 $(".chessboard div").removeClass('active inactive target');
-                $(this).addClass('inactive');       
-                return false;
-            }
 
-            var clicked_square=$(this).data('square');
-            var piece_color=$(this).data('piece-color');
-            var valid_piece_moves=board.valid_moves[board.moving_player][clicked_square];
-            var promotion_piece;
+                if ([0, 1].includes(piece_color) && board.moving_player === piece_color && typeof board.valid_moves[board.moving_player][clicked_square] !== 'undefined') {
 
-            //if we click an already clicked square we unselect it
-            if($(this).hasClass('active') || $(this).hasClass('inactive') ){
-                $(".chessboard div").removeClass('active inactive target');
-                return;
-            }
-            
-            // of if its a target square we make the move
-            if($(this).hasClass('target')){
+                    for (var i = 0; i < valid_piece_moves.length; i++) {
 
-            var from=$(".chessboard div.active").data('square');
-            var to=$(this).data('square');
-            
-           if(typeof $(this).data('promotion-piece')!=='undefined') { to+=$(this).data('promotion-piece');}
+                        let target_square = board.valid_moves[board.moving_player][clicked_square][i];
+                        promotion_piece = false;
 
-            board.move(from,to);
-            update_board(board);
-            $(".info").addClass('thinking');
+                        if (typeof target_square === 'string') {
+                            promotion_piece = target_square[target_square.length - 1];
+                        }
 
-            var worker = new Worker('worker.js');
+                        $(this).addClass('active');
 
-            worker.addEventListener('message', function(e) {
-            
-            //console.log('Worker said: ', e.data);
-            var best_move=e.data.best_move;
-            board.total_evaluations=e.data.total_evaluations;
-            board.evaluations_per_second=e.data.evaluations_per_second;
+                        $('*[data-square="' + parseInt(target_square) + '"]').addClass('target');
+                        if (promotion_piece) {
+                            $('*[data-square="' + parseInt(target_square) + '"]').data('promotion-piece', promotion_piece);
+                        }
+                    }
 
-            board.move(best_move[0],best_move[1]);
-            update_board(board);
-            $(".info").removeClass('thinking');    
-            }, false);
+                } else {
+
+                    $(this).addClass('inactive');
+
+                }
+
+            });
 
 
-            worker.postMessage(JSON.stringify(board));
 
-            /*
-            var best_move=board.find_best_move();
-            
-            if(best_move.length>0){
-            board.move(best_move[0],best_move[1]);
-            }
-
-            update_board(board);
-            */
-            return;
-
-            }
-
-            //we click a new square so we clear the board 
-
-            $(".chessboard div").removeClass('active inactive target');
-            
-            if( [0,1].includes(piece_color) && board.moving_player===piece_color && typeof board.valid_moves[board.moving_player][clicked_square]!=='undefined' ){
-
-            for(var i=0;i<valid_piece_moves.length;i++){
-
-                let target_square=board.valid_moves[board.moving_player][clicked_square][i];
-                promotion_piece=false;
-
-                if(typeof target_square==='string') { promotion_piece=target_square[target_square.length-1]; }
-
-                $(this).addClass('active');
-
-                $('*[data-square="'+parseInt(target_square)+'"]').addClass('target');
-                if(promotion_piece) { $('*[data-square="'+parseInt(target_square)+'"]').data('promotion-piece',promotion_piece); }
-            }
-
-            }else{
-            
-                $(this).addClass('inactive');
-
-            }
- 
         });
-
-        
-
-    });
 
     </script>
 

@@ -1,7 +1,7 @@
 //(function(){
-    if (typeof window === 'undefined'){
+  /*  if (typeof window === 'undefined'){
         var { performance } = require('perf_hooks'); }
-
+*/
 var squares = [];
 
 var piece_values = { 'p':10, 'P': 10, 'n':30 ,'N': 30, 'b':30, 'B': 30, 'r':50, 'R': 50, 'q': 90, 'Q':90, 'k':1000, 'K': 1000 }
@@ -341,7 +341,7 @@ board.find_valid_moves=function(){
                     }
                     
                     //we make the move temporarily to check if king is captured 
-
+                    /*
                     var old_target=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=this.position[square];
                     this.position[square]=0;
@@ -361,8 +361,8 @@ board.find_valid_moves=function(){
                     this.position[parseInt(target_square)]=old_target;
                     // en passant temporary fix
                     if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
-
-                if(!king_capture_found){
+                    */
+                if(true /*!king_capture_found*/){
                     
                 (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
                     
@@ -433,118 +433,99 @@ board.evaluate_board=function(){
         
             }
 
+            if(board.moves.length<12){
+
+                if(this.position[22]==='n') evaluation-=2;
+                if(this.position[23]==='b') evaluation-=2;
+                if(this.position[26]==='b') evaluation-=2;
+                if(this.position[26]==='n') evaluation-=2;
+
+                if(this.position[92]==='n') evaluation+=2;
+                if(this.position[93]==='b') evaluation+=2;
+                if(this.position[96]==='b') evaluation+=2;
+                if(this.position[96]==='n') evaluation+=2;
+
+
+            }
+
         }
 
     return evaluation;
 }
 
-board.minmax=function(depth,alpha,beta,isMax){
-
-    var best_move=0;
-    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
-
-    if(depth===0){
-        this.total_evaluations++;
-        return this.evaluate_board();
-    }
-
-    if(isMax){
-
-        best_move=-9999;   
-
-        for (var j=0;j<candidate_moves.length;j++){
-
-            var from=candidate_moves[j];
-
-            for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
-
-                var to=board.valid_moves[board.moving_player][from][h];
-                
-                this.move(from,to);
-                best_move=Math.max(best_move, board.minmax(depth - 1, alpha, beta, !isMax));
-                this.undo_move();
-
-                alpha = alpha>best_move?alpha:best_move;
-
-                if (beta <= alpha) {
-                   return best_move;
-                }
-            }
-
-        }
-
-        return best_move;
-
-    }else{
-
-        best_move=9999; 
-
-        for (var j=0;j<candidate_moves.length;j++){
-
-            var from=candidate_moves[j];
-
-            for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
-
-                var to=board.valid_moves[board.moving_player][from][h];
-                
-                this.move(from,to);
-                best_move=Math.min(best_move, board.minmax(depth - 1, alpha, beta,  !isMax));
-                this.undo_move();
-
-                beta = beta<best_move?beta:best_move
-
-                if (beta <= alpha) {
-                   return best_move;
-                }
-
-            }
-
-        }
-
-        return best_move;
-
-    }
-
-}
 
 board.find_best_move=function(){
 
     var tstart = performance.now();
 
     var best_move=[];
-    var best_eval=2000;
+    var best_eval=10000;
     var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
+    var total_moves=0;
+    var analyzed_moves=0;
 
     for (var j=0;j<candidate_moves.length;j++){
     
         var from=candidate_moves[j]; 
 
         for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
-    
+        
+        total_moves++;
+
         var to=board.valid_moves[board.moving_player][from][h];
         
 
         this.move(from,to);
-        current_eval=this.minmax(2,-9999,9999,true);
+
+        var worker = new Worker('worker.js');
+
+        worker.addEventListener('message', function (e) {
+
+        //console.log(e.data);
+        
+        board.total_evaluations+=e.data.nodes;
+        
+
+        if(e.data.evaluation<best_eval) { 
+            best_eval=e.data.evaluation;
+            best_move=[e.data.from,e.data.to];
+            }
+
+        analyzed_moves++;
+
+        if(analyzed_moves===total_moves){
+
+            var tstop = performance.now(); 
+            board.evaluations_per_second=board.total_evaluations/((tstop - tstart)/1000);
+
+            self.postMessage({'best_move':best_move,'total_evaluations':board.total_evaluations,'evaluations_per_second':board.evaluations_per_second});
+            self.close();
+        }
+
+        }, false);
+
+
+        worker.postMessage({'board':JSON.stringify(this),'from':from,'to':to});
+
         this.undo_move();   
         
-        if(current_eval<best_eval) { 
-            best_eval=current_eval;
-            best_move=[from,to];
-            }
         }
 
     }
-    
-    var tstop = performance.now(); 
-    this.evaluations_per_second=this.total_evaluations/((tstop - tstart)/1000);
 
     return best_move;
 }
 
 
-board.initialize();
+self.addEventListener('message', function(e) {
 
+    board.initialize();
+    board.set(JSON.parse(e.data));
+    board.find_best_move();
+   
+  }, false);
+
+board.initialize();
 
 /*
 var i=0;var tstart = performance.now();   

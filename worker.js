@@ -334,7 +334,7 @@ board.find_valid_moves=function(){
                     }
                     
                     //we make the move temporarily to check if king is captured 
-
+                /*
                     var old_target=this.position[parseInt(target_square)];
                     this.position[parseInt(target_square)]=this.position[square];
                     this.position[square]=0;
@@ -354,8 +354,8 @@ board.find_valid_moves=function(){
                     this.position[parseInt(target_square)]=old_target;
                     // en passant temporary fix
                     if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
-
-                if(!king_capture_found){
+                 */   
+                if(true /*!king_capture_found*/){
                     
                 (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
                     
@@ -500,189 +500,18 @@ board.minmax=function(depth,alpha,beta,isMax){
 
 }
 
-board.find_best_move=function(){
 
-    var tstart = performance.now();
-
-    var best_move=[];
-    var best_eval=2000;
-    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
-
-    for (var j=0;j<candidate_moves.length;j++){
-    
-        var from=candidate_moves[j]; 
-
-        for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
-    
-        var to=board.valid_moves[board.moving_player][from][h];
-        
-
-        this.move(from,to);
-        current_eval=this.minmax(3,-9999,9999,true);
-        this.undo_move();   
-        
-        if(current_eval<best_eval) { 
-            best_eval=current_eval;
-            best_move=[from,to];
-            }
-        }
-
-    }
-    
-    var tstop = performance.now(); 
-    this.evaluations_per_second=this.total_evaluations/((tstop - tstart)/1000);
-    console.log(this.evaluations_per_second);
-    return best_move;
-}
 
 self.addEventListener('message', function(e) {
 
+    // console.log(e.data);
     board.initialize();
-   // console.log(e.data);
-    board.set(JSON.parse(e.data));
-    var best_move=board.find_best_move();
-    var evaluations_per_second=board.evaluations_per_second;
-    var total_evaluations=board.total_evaluations;
-
-    self.postMessage({'best_move':best_move,'total_evaluations':total_evaluations,'evaluations_per_second':evaluations_per_second});
+    board.set(JSON.parse(e.data.board));
+    var evaluation=board.minmax(3,-9999,9999,true);
+    self.postMessage({'from':e.data.from,'to':e.data.to,'evaluation':evaluation,'nodes':board.total_evaluations});
+    self.close();
   }, false);
 
 
 
 
-/*
-var i=0;var tstart = performance.now();   
-var white_won=black_won=draws=0;
-
-var candidate_moves = Object.keys(board.valid_moves[board.moving_player]);
-
-
-for (var j=0;j<candidate_moves.length;j++){
-
-    var from=candidate_moves[j]; 
-    
-    for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
-
-    var to=board.valid_moves[board.moving_player][from][h];
-    
-    console.log(from+'_'+to);
-    board.move(from,to);
-    board.random_games(10000);
-    }
-}*/
-
-
-
-
-
-// random games
-/*
-var i=0;
-var games=0;
-var stats=[0,0,0,0];
-var tstart = performance.now();
-
-setInterval(function(){
-
-    board.move_random();
-    i++;
-    if (typeof window !== 'undefined'){
-    update_board(board);
-    }
-
-    if(board.game_status!=2 || board.moves.length>240){
-        var tstop = performance.now();
-        stats[board.game_status]++;
-        games++;
-
-        if(games%100===0 ){ 
-
-            console.log('Played '+ games);
-            console.log('White won '+stats[0]);
-            console.log('Black won '+stats[1]);
-            console.log('No winner '+stats[2]);
-            console.log('Total Moves '+ i);
-            var moves_per_sec=i/((tstop - tstart)/1000);
-            console.log( moves_per_sec.toFixed(2) + " moves/second.");
-
-        };
-
-        board.initialize();
-
-
-    }
-
-    
-}, 0);
-*/
-
-
-
-
-    //console.log(i);
-
-
-
-//}).call(this);
-/*
-var chess_worker = new Worker('worker.js');
-chess_worker.postMessage('starting_position');
-
-
-chess_worker.onmessage = function(e) {
-    console.log(e.data);
-  }*/
-
-//var random_moves=50;
-
-/*
-    if(i%100000==0) {
-        var t1 = performance.now();
-        console.log("100000 " + 100000/((t1 - t0)*1000) + " moves/second.");
-        var t0 = performance.now(); 
-    }
-
-    
-
-
-/*
-board.initialize(starting_position);
-
-for(var i=1;i<2;i++){
-board.move_random();
-board.print();
-board.status();
-}*/
-
-
-
-
-/*
-board.print=function(){
-    
-    var a=square=''; 
-
-    if(this.position){
-    for(var i=20;i<100;i++){
-  
-    square=this.position[i];
-
-    if(i==20 || i%10==0) square='|';
-    if((i+1)%10==0) square='|\n';
-    if(this.position[i]==0) square='.';
-
-        a+=' '+square;
-    }
-
-    console.log(a);
-    }else{
-    console.log('board is not defined');
-    }
-
-}
-
-board.status=function(){
-    console.log(this.moving_player?'black':'white');
-    console.log("move "+this.moves.length);
-    console.log(this.moves);
-}*/
