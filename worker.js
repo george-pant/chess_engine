@@ -426,6 +426,23 @@ board.evaluate_board=function(){
         
             }
 
+            
+
+        }
+
+        if(board.moves.length<12){
+           
+            if(board.position[22]==='n') evaluation-=10;
+            if(board.position[23]==='b') evaluation-=10;
+            if(board.position[26]==='b') evaluation-=10;
+            if(board.position[27]==='n') evaluation-=10;
+
+            if(board.position[92]==='N') evaluation+=10;
+            if(board.position[93]==='B') evaluation+=10;
+            if(board.position[96]==='B') evaluation+=10;
+            if(board.position[97]==='N') evaluation+=10;
+
+
         }
 
     return evaluation;
