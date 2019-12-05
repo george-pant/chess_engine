@@ -281,6 +281,10 @@ board.find_valid_moves=function(){
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
+    var captures=[];
+    var normal_moves=[];
+
+
    for ( var square=21;square<99;square++){    // iterate all boards squares
 
         if (this.position[square]==0 || this.position[square]==1 ) { continue; }     //if empty square or outside board continue
@@ -288,7 +292,7 @@ board.find_valid_moves=function(){
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
 
-    //    if(moving_piece_color!=this.moving_player) { continue; }
+        if(moving_piece_color!=this.moving_player) { continue; }
 
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
@@ -365,18 +369,26 @@ board.find_valid_moves=function(){
                     */
                 if(true /*!king_capture_found*/){
                     
-                (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
+                
                     
                 }
                 
-                if( target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
+                if( target_piece_color!=2 ) { 
+                    (captures[square] = captures[square] || []).push(target_square);
+                    break; //we found a capture so we stop this line
+                }else{
+                   (normal_moves[square] = normal_moves[square] || []).push(target_square);
+                }  
             
                 }
 
         }
-    
+        
         
     }   
+    //console.log(moving_piece_color);
+    this.valid_moves[this.moving_player]= [].concat(captures,normal_moves);
+   // console.log(this.valid_moves);
 
 }
     

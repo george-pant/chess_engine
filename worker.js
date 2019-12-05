@@ -275,6 +275,9 @@ board.find_valid_moves=function(){
     this.valid_moves[0]=[]; //white valid moves
     this.valid_moves[1]=[]; //black valid moves
 
+    var captures=[];
+    var normal_moves=[];
+
    for ( var square=21;square<99;square++){    // iterate all boards squares
 
         if (this.position[square]==0 || this.position[square]==1 ) { continue; }     //if empty square or outside board continue
@@ -282,7 +285,7 @@ board.find_valid_moves=function(){
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
 
-    //    if(moving_piece_color!=this.moving_player) { continue; }
+        if(moving_piece_color!=this.moving_player) { continue; }
 
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
@@ -335,35 +338,14 @@ board.find_valid_moves=function(){
 
                     }
                     
-                    //we make the move temporarily to check if king is captured 
-                /*
-                    var old_target=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=this.position[square];
-                    this.position[square]=0;
-                    
-                    // en passant temporary fix
-                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=0; }
-
-                    var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
-
-                    //check if king is captured
-                    
-                    var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
-
-                    //undo the move
-                    
-                    this.position[square]=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=old_target;
-                    // en passant temporary fix
-                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
-                 */   
-                if(true /*!king_capture_found*/){
-                    
-                (this.valid_moves[moving_piece_color][square] = this.valid_moves[moving_piece_color][square] || []).push(target_square);
-                    
-                }
                 
-                if( target_piece_color!=2 ) { break; }  //we found a capture so we stop this line
+                    
+                    if( target_piece_color!=2 ) { 
+                        (captures[square] = captures[square] || []).push(target_square);
+                        break; //we found a capture so we stop this line
+                    }else{
+                       (normal_moves[square] = normal_moves[square] || []).push(target_square);
+                    } 
             
                 }
 
@@ -371,6 +353,8 @@ board.find_valid_moves=function(){
     
         
     }   
+
+    this.valid_moves[this.moving_player]= [].concat(captures,normal_moves);
 
 }
     
