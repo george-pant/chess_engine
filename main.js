@@ -183,6 +183,7 @@ board.undo_move=function(){
 
     this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
+    this.en_pasan=previous.en_pasan;
     this.moves=previous.moves.concat(); 
     this.moving_player= 1 - this.moving_player;     //change moving player
     this.game_status=2;

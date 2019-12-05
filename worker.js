@@ -82,6 +82,7 @@ board.move=function(from,to){
         {
             position:this.position.slice(),
             castling_rights:this.castling_rights.slice(),
+            en_pasan:this.en_pasan,
             moves:this.moves.slice()
             
         }); 
@@ -176,6 +177,7 @@ board.undo_move=function(){
 
     this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
+    this.en_pasan=previous.en_pasan;
     this.moves=previous.moves.concat(); 
     this.moving_player= 1 - this.moving_player;     //change moving player
     this.game_status=2;
@@ -458,6 +460,7 @@ board.minmax=function(depth,alpha,beta,isMax){
         return this.evaluate_board();
     }
 
+
     if(isMax){
 
         best_move=-9999;   
@@ -465,7 +468,7 @@ board.minmax=function(depth,alpha,beta,isMax){
         for (var j=0;j<candidate_moves.length;j++){
 
             var from=candidate_moves[j];
-
+            
             for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
 
                 var to=board.valid_moves[board.moving_player][from][h];
