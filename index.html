@@ -136,7 +136,6 @@
             var position = board.position;
             var color = (window.board.moving_player) ? 'Black' : 'White';
             var status = (window.board.game_status == 2) ? ' to play' : ' Lost';
-            var evaluation = board.evaluate_board();
             var piece = '';
             var piece_color = '';
 
@@ -144,11 +143,11 @@
 
             $(".info .moving_player").text(status_message);
 
-            $(".evaluation").text(evaluation);
+           // $(".evaluation").text(evaluation);
             $(".total_evaluations").text(board.total_evaluations);
             $(".evaluations_per_second").text(board.evaluations_per_second.toFixed(2));
 
-            $(".info .move_number").text(Math.ceil(window.board.moves.length / 2));
+            //$(".info .move_number").text(Math.ceil(window.board.moves.length / 2));
 
             $(".chessboard div").removeClass("active inactive target");
             $(".chessboard div").data('promotion-piece', null);

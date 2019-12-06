@@ -1,5 +1,5 @@
 
-var piece_values = { 'p':10, 'P': 10, 'n':30 ,'N': 30, 'b':30, 'B': 30, 'r':50, 'R': 50, 'q': 90, 'Q':90, 'k':1000, 'K': 1000 }
+var piece_values = { 'p':10, 'P': 10, 'n':30 ,'N': 30, 'b':30, 'B': 30, 'r':50, 'R': 50, 'q': 90, 'Q':90, 'k':10000, 'K': 10000 }
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
@@ -35,30 +35,33 @@ board.total_evaluations=0;
 board.evaluations_per_second=0;
 board.game_status=2                     //0 if white won 1 for black 2 for game in progress 3 for stalemate
 board.moving_player=0                   //0 for white player 1 for black
-board.moves=[];                         //game moves
+//board.moves=[];                         //game moves
 board.en_pasan=false;                   //en pasan square
 board.valid_moves=[];                   //possible valid moves
 board.position=[];
 board.history=[];
 board.castling_rights=[[true,true],[true,true]];
-
+board.piece_evaluation=0;
+board.positional_evaluation=0;
 
 board.set=function(old_board){
     this.game_status=old_board.game_status; 
     this.moving_player=old_board.moving_player;                   //0 for white player 1 for black
-    this.moves=old_board.moves;                         //game moves
+    //this.moves=old_board.moves;                         //game moves
     this.en_pasan=old_board.en_pasan;
     this.valid_moves=old_board.valid_moves;                   //possible valid moves
     this.position=old_board.position.concat();
     this.history=old_board.history;
     this.castling_rights=old_board.castling_rights;
+    this.piece_evaluation=0;
+    this.positional_evaluation=0
     this.find_valid_moves();
 }
 
 board.move=function(move){
     //console.log(move);
     
-    this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
+    //this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
    
     //console.log(board.valid_moves);
     if(this.valid_moves.includes(move)){
@@ -72,7 +75,7 @@ board.move=function(move){
         {
             position:this.position.slice(),
             castling_rights:this.castling_rights.slice(),
-            moves:this.moves.slice()
+            //moves:this.moves.slice()
             
         }); 
 
@@ -136,20 +139,11 @@ board.move=function(move){
     else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    this.castling_rights[1][1]=false;  }
     
 
-    this.moves.push(move);                     //keep track of moves,
-    this.moving_player= 1 - this.moving_player;     //change moving player
-
+    //this.moves.push(move);                     //keep track of moves,
+    //this.moving_player= 1 - this.moving_player;     //change moving player
+    this.moving_player^= 1;
     this.find_valid_moves();                        //find valid moves for next move
-    /*
-    if(this.valid_moves.length===0){ //Player has no valid move - checkmate or stalemate 
-
-        king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
-        this.game_status=this.attacked_square(king_square,1-this.moving_player)? 1 - this.moving_player :3; //if our king is attacked its a checkmate 
-
-    }*/
-    console.log(board.moving_player);
-    console.log(board.valid_moves);
-
+    
     return true;
 
    }else{
@@ -162,16 +156,15 @@ board.move=function(move){
 
 board.undo_move=function(){
     
-    if(this.history.length>0){
-
     var previous=this.history.pop();
-
+    
     this.position=previous.position.concat();
     this.castling_rights=previous.castling_rights;
     this.en_pasan=previous.en_pasan;
-    this.moves=previous.moves.concat(); 
-    this.moving_player= 1 - this.moving_player;     //change moving player
-    this.game_status=2;
+    //this.moves=previous.moves.concat(); 
+    //this.moving_player= 1 - this.moving_player;     //change moving player
+    this.moving_player^= 1;
+    //this.game_status=2;
     /*
     if(this.game_status==2){
         this.moving_player= 1 - this.moving_player;
@@ -180,10 +173,6 @@ board.undo_move=function(){
     }*/
 
     this.find_valid_moves();
-
-    }else{
-        return false;
-    }
 
 }
 
@@ -276,10 +265,10 @@ board.find_valid_moves=function(){
                     //if pawns are not in the first row they cannot move two squares
                     if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } 
                     
-                if(this.en_pasan && target_square===this.en_pasan){ /*target_square+='_';*/} //en pasan
+                    //if(this.en_pasan && target_square===this.en_pasan){ /*target_square+='_';*/} //en pasan
 
                     //auto promote to queen
-                    if (piece==='p' && target_square>90) { target_square+='q'; } if (piece==='P' && target_square<29 ) { target_square+='Q'; } //auto promote to queen
+                  //  if (piece==='p' && target_square>90) { target_square+='q'; } if (piece==='P' && target_square<29 ) { target_square+='Q'; } //auto promote to queen
                     
                 }
                 
@@ -304,43 +293,12 @@ board.find_valid_moves=function(){
 
                     }
                     
-                    //we make the move temporarily to check if king is captured 
-                    /*
-                    var old_target=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=this.position[square];
-                    this.position[square]=0;
-                    
-                    // en passant temporary fix
-                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=0; }
-
-                    var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
-
-                    //check if king is captured
-                    
-                    var king_capture_found=this.attacked_square(king_square,1-this.moving_player);
-
-                    //undo the move
-                    
-                    this.position[square]=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=old_target;
-                    // en passant temporary fix
-                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
-                    */
-                if(true /*!king_capture_found*/){
-                    
-                
                     this.valid_moves.push(square*100+target_square)
-                }
-                /*
-                if( target_piece_color!=2 ) { 
-                    (captures[square] = captures[square] || []).push(target_square);
-                    break; //we found a capture so we stop this line
-                }else{
-                   (normal_moves[square] = normal_moves[square] || []).push(target_square);
-                }  
-            
-                }*/
 
+                if( target_piece_color!=2 ) { 
+                    break; 
+                } 
+ 
         }
         
         
@@ -360,7 +318,7 @@ board.evaluate_board=function(){
     var attacking_squares=[];
     attacking_squares[0]=[];
     attacking_squares[1]=[];
-
+/*
     for ( var square=21;square<99;square++){    // iterate all boards squares
 
         
@@ -378,6 +336,7 @@ board.evaluate_board=function(){
             evaluation+=piece_values[piece];
         }
 
+        /*
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
             if( (piece==='p' || piece==='P') && k===0) continue;
@@ -404,13 +363,13 @@ board.evaluate_board=function(){
 
                 }
         
-            }
+            }*/
 
             
 
-        }
+        
 
-        if(board.moves.length<12){
+        //if(board.moves.length<12){
            
             if(board.position[22]==='n') evaluation-=10;
             if(board.position[23]==='b') evaluation-=10;
@@ -423,16 +382,17 @@ board.evaluate_board=function(){
             if(board.position[97]==='N') evaluation+=10;
 
 
-        }
+        //}
 
     return evaluation;
+
+
 }
 
 board.minmax=function(depth,alpha,beta,isMax){
 
     var best_move=0;
-    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
-
+    
     if(depth===0){
         this.total_evaluations++;
         return this.evaluate_board();
@@ -463,7 +423,7 @@ board.minmax=function(depth,alpha,beta,isMax){
 
         for (var h=0;h<board.valid_moves.length;h++){
                 
-            this.move(board.valid_moves[h]);
+                this.move(board.valid_moves[h]);
                 best_move=Math.min(best_move, board.minmax(depth - 1, alpha, beta,  !isMax));
                 this.undo_move();
 
@@ -488,8 +448,9 @@ self.addEventListener('message', function(e) {
     // console.log(e.data);
     //board.initialize();
     board.set(JSON.parse(e.data.board));
-    var evaluation=board.minmax(0,-9999,9999,true);
+    var evaluation=board.minmax(5,-9999,9999,true);
     //console.log({'from':e.data.from,'to':e.data.to,'evaluation':evaluation,'nodes':board.total_evaluations});
+    //console.log(e.data.move);
     self.postMessage({'move':e.data.move,'evaluation':evaluation,'nodes':board.total_evaluations});
     self.close();
   }, false);
