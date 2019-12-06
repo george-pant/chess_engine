@@ -41,8 +41,15 @@
                 Move :<span class="move_number"></span>
             </div>
 
+            <div>
+                Play against <select name="opponent-select" id="opponent-select">
+                    <option value="engine">ENGINE</option>
+                    <option value="human" >HUMAN</option>
+                </select>
+            </div>
             <div class="button undo-move">TAKEBACK MOVE</div>
             <div class="button new-game">NEW GAME</div>
+            
         </div>
     </div>
 
@@ -222,7 +229,17 @@
 
                 var clicked_square = $(this).data('square');
                 var piece_color = $(this).data('piece-color');
-                var valid_piece_moves = board.valid_moves[board.moving_player][clicked_square];
+                var valid_piece_moves = [];
+                
+                //board.valid_moves[board.moving_player][clicked_square];
+
+                for (var h=0;h<board.valid_moves.length;h++){
+                    if(Math.floor(board.valid_moves[h]/100)===clicked_square){
+                        valid_piece_moves.push(board.valid_moves[h]%100);
+                    }
+                }
+
+                
                 var promotion_piece;
 
                 //if we click an already clicked square we unselect it
@@ -241,36 +258,33 @@
                         to += $(this).data('promotion-piece');
                     }
 
-                    board.move(from, to);
+                    
+                    board.move(from*100+to);
                     update_board(board);
-                    $(".info").addClass('thinking');
 
-                    var worker = new Worker('main.js');
+                    if($("#opponent-select").val()=='engine'){
 
-                    worker.addEventListener('message', function (e) {
+                            $(".info").addClass('thinking');
 
-                        //console.log('Worker said: ', e.data);
-                        var best_move = e.data.best_move;
-                        board.total_evaluations = e.data.total_evaluations;
-                        board.evaluations_per_second = e.data.evaluations_per_second;
+                            var worker = new Worker('main.js');
 
-                        board.move(best_move[0], best_move[1]);
-                        update_board(board);
-                        $(".info").removeClass('thinking');
-                    }, false);
+                            worker.addEventListener('message', function (e) {
 
+                                //console.log('Worker said: ', e.data);
+                                console.log(e.data);
+                                var best_move = e.data.best_move;
+                                board.total_evaluations = e.data.total_evaluations;
+                                board.evaluations_per_second = e.data.evaluations_per_second;
 
-                    worker.postMessage(JSON.stringify(board));
+                                board.move(best_move);
+                                update_board(board);
+                                $(".info").removeClass('thinking');
+                            }, false);
 
-                    /*
-                     var best_move=board.find_best_move();
-                     
-                     if(best_move.length>0){
-                     board.move(best_move[0],best_move[1]);
-                     }
-                     
-                     update_board(board);
-                     */
+                            
+                            worker.postMessage(JSON.stringify(board));
+                    }
+                    
                     return;
 
                 }
@@ -279,11 +293,11 @@
 
                 $(".chessboard div").removeClass('active inactive target');
 
-                if ([0, 1].includes(piece_color) && board.moving_player === piece_color && typeof board.valid_moves[board.moving_player][clicked_square] !== 'undefined') {
+                if ([0, 1].includes(piece_color) && board.moving_player === piece_color && valid_piece_moves.length>0 ) {
 
                     for (var i = 0; i < valid_piece_moves.length; i++) {
 
-                        let target_square = board.valid_moves[board.moving_player][clicked_square][i];
+                        let target_square = valid_piece_moves[i];
                         promotion_piece = false;
 
                         if (typeof target_square === 'string') {

@@ -44,9 +44,11 @@ board.game_status=2                     //0 if white won 1 for black 2 for game 
 board.moving_player=0                   //0 for white player 1 for black
 board.moves=[];                         //game moves
 board.en_pasan=false;                   //en pasan square
-board.valid_moves=[];                   //possible valid moves
-board.valid_moves[0]=[];                   //possible valid moves
-board.valid_moves[1]=[];                   //possible valid moves
+
+board.valid_moves=[];                   //possible valid move
+
+//board.valid_moves[0]=[];                   //possible valid moves
+//board.valid_moves[1]=[];                   //possible valid moves
 board.position=[];
 board.history=[];
 board.castling_rights=[[true,true],[true,true]];
@@ -77,12 +79,17 @@ board.set=function(old_board){
     this.find_valid_moves();
 }
 
-board.move=function(from,to){
-
+board.move=function(move){
+    //console.log(move);
+    
     this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
    
-    if(this.valid_moves[this.moving_player][from].includes(to)){
+    //console.log(board.valid_moves);
+    if(this.valid_moves.includes(move)){
     
+    var from=~~(move / 100);
+    var to=move%100;
+
     //keep the current state in history
 
         this.history.push( 
@@ -94,19 +101,20 @@ board.move=function(from,to){
         }); 
 
     //make the move in board
-    this.position[parseInt(to)]=this.position[from];
+    this.position[to]=this.position[from];
     this.position[from]=0;
  
-    if(typeof to==='string') { 
+    if(this.en_pasan && to===this.en_pasan && this.position[to]==='p') { 
         
-        if(parseInt(to)===this.en_pasan){ 
+        
             var attacked_pawn=this.moving_player?10:-10;
             this.position[parseInt(to)+attacked_pawn]=0;    
         }
-        else{
+    
+    if(false){
         this.position[parseInt(to)]=to[to.length-1] //pawn promotions
-        }  
-    }
+    }  
+    
 
     this.en_pasan=false; 
 
@@ -152,23 +160,23 @@ board.move=function(from,to){
     else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    this.castling_rights[1][1]=false;  }
     
 
-    this.moves.push([from,to]);                     //keep track of moves,
+    this.moves.push(move);                     //keep track of moves,
     this.moving_player= 1 - this.moving_player;     //change moving player
 
     this.find_valid_moves();                        //find valid moves for next move
-
-    if(this.valid_moves[this.moving_player].length===0){ //Player has no valid move - checkmate or stalemate 
+    /*
+    if(this.valid_moves.length===0){ //Player has no valid move - checkmate or stalemate 
 
         king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
         this.game_status=this.attacked_square(king_square,1-this.moving_player)? 1 - this.moving_player :3; //if our king is attacked its a checkmate 
 
-    }
+    }*/
     
 
     return true;
 
    }else{
-        console.log('invalid move from '+from+' to '+to);
+        console.log('invalid move '+move);
         board.print();
         board.status();
         return false;
@@ -202,33 +210,7 @@ board.undo_move=function(){
 
 }
 
-board.move_random=function(){
-    //return true;
 
-    //this.moving_player=this.moves.length%2==0?0:1;
-    
-    //var first_piece=Object.keys(this.valid_moves[this.moving_player])[0];
-    //var first_to=this.valid_moves[this.moving_player][first_piece][0];
-
-
-    var keys = Object.keys(this.valid_moves[this.moving_player]);
-
-    var random_piece=keys[Math.floor(keys.length * Math.random())];
-    var random_move=this.valid_moves[this.moving_player][random_piece][Math.floor(this.valid_moves[this.moving_player][random_piece].length * Math.random())];
-    
-    var from=parseInt(random_piece);
-    var to=random_move;
-
-    //console.log(from+'_'+to);
-/*
-    var from=first_piece;
-    var to=first_to;
-*/
-    if(this.move(from,to)) return [from,to];
-
-    return false;
-
-}
 
 board.find_piece_color=function(square){
     if (this.position[square]==0 || this.position[square]==1  || typeof this.position[square]==='undefined'){ return 2; }
@@ -278,8 +260,8 @@ board.attacked_square=function(square,attacking_player){
 
 board.find_valid_moves=function(){
     
-    this.valid_moves[0]=[]; //white valid moves
-    this.valid_moves[1]=[]; //black valid moves
+    this.valid_moves=[]; 
+    
 
     var captures=[];
     var normal_moves=[];
@@ -317,7 +299,7 @@ board.find_valid_moves=function(){
                     //if pawns are not in the first row they cannot move two squares
                     if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } 
                     
-                    if(this.en_pasan && target_square===this.en_pasan){ target_square+='_';} //en pasan
+                if(this.en_pasan && target_square===this.en_pasan){ /*target_square+='_';*/} //en pasan
 
                     //auto promote to queen
                     if (piece==='p' && target_square>90) { target_square+='q'; } if (piece==='P' && target_square<29 ) { target_square+='Q'; } //auto promote to queen
@@ -370,9 +352,9 @@ board.find_valid_moves=function(){
                 if(true /*!king_capture_found*/){
                     
                 
-                    
+                    this.valid_moves.push(square*100+target_square)
                 }
-                
+                /*
                 if( target_piece_color!=2 ) { 
                     (captures[square] = captures[square] || []).push(target_square);
                     break; //we found a capture so we stop this line
@@ -380,18 +362,18 @@ board.find_valid_moves=function(){
                    (normal_moves[square] = normal_moves[square] || []).push(target_square);
                 }  
             
-                }
+                }*/
 
         }
         
         
     }   
     //console.log(moving_piece_color);
-    this.valid_moves[this.moving_player]= [].concat(captures,normal_moves);
-   // console.log(this.valid_moves);
+    //this.valid_moves[this.moving_player]= [].concat(captures,normal_moves);
+    //console.log(this.valid_moves);
 
 }
-    
+}
 board.evaluate_board=function(){
 
     var center_squares=[[54,55,64,65],[44,45,74,75,53,56,63,66]];
@@ -473,22 +455,16 @@ board.find_best_move=function(){
 
     var best_move=[];
     var best_eval=10000;
-    var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
+    //var candidate_moves = Object.keys(board.valid_moves[this.moving_player]);
     var total_moves=0;
     var analyzed_moves=0;
+  
 
-    for (var j=0;j<candidate_moves.length;j++){
-    
-        var from=candidate_moves[j]; 
-
-        for (var h=0;h<board.valid_moves[board.moving_player][from].length;h++){
+    for (var h=0;h<board.valid_moves.length;h++){
         
         total_moves++;
 
-        var to=board.valid_moves[board.moving_player][from][h];
-        
-
-        this.move(from,to);
+        this.move(board.valid_moves[h]);
 
         var worker = new Worker('worker.js');
 
@@ -501,7 +477,7 @@ board.find_best_move=function(){
 
         if(e.data.evaluation<best_eval) { 
             best_eval=e.data.evaluation;
-            best_move=[e.data.from,e.data.to];
+            best_move=e.data.move;
             }
 
         analyzed_moves++;
@@ -517,14 +493,14 @@ board.find_best_move=function(){
 
         }, false);
 
-
-        worker.postMessage({'board':JSON.stringify(this),'from':from,'to':to});
+        console.log(this);
+        worker.postMessage({'board':JSON.stringify(board),'move':board.valid_moves[h]});
 
         this.undo_move();   
         
-        }
-
     }
+
+    
 
     return best_move;
 }
