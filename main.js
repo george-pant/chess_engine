@@ -228,9 +228,9 @@ board.attacked_square=function(square,attacking_player){
 
             if (this.position[attack_check]==0) { continue; }
 
-            if(this.position[attack_check]==1 ) { break; } 
+            if(this.position[attack_check]==-1 ) { break; } 
 
-            attacking_piece_color=this.find_piece_color(attack_check);
+            attacking_piece_color=this.position[attack_check]>>3;
 
             if( piece_color === attacking_piece_color ) { break; } //we found our own piece first
 
@@ -263,10 +263,11 @@ board.find_valid_moves=function(){
 
    for ( var square=21;square<99;square++){    // iterate all boards squares
 
-        if (this.position[square]==0 || this.position[square]==-1 ) { continue; }     //if empty square or outside board continue
+        if (this.position[square]<1 ) { continue; }     //if empty square or outside board continue
             
         var piece=this.position[square];
-        var moving_piece_color= this.find_piece_color(square);
+        //var moving_piece_color= this.find_piece_color(square);
+        var moving_piece_color= this.position[square]>>3;
 
         if(moving_piece_color!=this.moving_player) { continue; }
         
@@ -278,7 +279,8 @@ board.find_valid_moves=function(){
                 
                 if(this.position[target_square]==-1 ) { break; }                          //target square is outside board
 
-                target_piece_color=this.find_piece_color(target_square);
+                //target_piece_color=this.find_piece_color(target_square);
+                target_piece_color=this.position[target_square]==0?2:this.position[target_square]>>3;
 
                 if( moving_piece_color === target_piece_color ) { break; }               //target square is occupied by friendly piece
                 
