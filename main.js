@@ -1,38 +1,42 @@
-//(function(){
-  /*  if (typeof window === 'undefined'){
-        var { performance } = require('perf_hooks'); }
-*/
-var squares = [];
 
-var piece_values = { 'p':10, 'P': 10, 'n':30 ,'N': 30, 'b':30, 'B': 30, 'r':50, 'R': 50, 'q': 90, 'Q':90, 'k':1000, 'K': 1000 }
+var piece_values = { 1:10, 9: 10, 2:30 ,10: 30, 3:30, 11: 30, 4:50, 12: 50, 5: 90, 13:90, 6:1000, 14: 1000 }
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
-directions["P"] = [[-10,-20],[-9],[-11]];
-directions["p"] = [[10,20],[9],[11]];
-directions["B"] = directions["b"] = [[-11,-22,-33,-44,-55,-66,-77],[-9,-18,-27,-36,-45,-54,-63],[11,22,33,44,55,66,77],[9,18,27,36,45,54,63]];
-directions["R"] = directions["r"] = [[-1,-2,-3,-4,-5,-6,-7],[-10,-20,-30,-40,-50,-60,-70],[1,2,3,4,5,6,7],[10,20,30,40,50,60,70] ];
-directions["N"] = directions["n"] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]];
-directions["Q"] = directions["q"] = directions["r"].concat(directions["b"]);
-directions["K"] = directions["k"] = [[-11],[-10],[-9],[-1,-2],[1],[9],[10],[11],[1,2]];
-directions["check"]=directions["q"].concat(directions["n"]);
+
+//white pawns
+directions[1] = [[10,20],[9],[11]]; 
+//knights
+directions[2] = directions[10] = [[-21],[-19],[-12],[-8],[8],[12],[19],[21]]; 
+//bishops
+directions[3] = directions[11] = [[-11,-22,-33,-44,-55,-66,-77],[-9,-18,-27,-36,-45,-54,-63],[11,22,33,44,55,66,77],[9,18,27,36,45,54,63]]; 
+//rooks
+directions[4] = directions[12] = [[-1,-2,-3,-4,-5,-6,-7],[-10,-20,-30,-40,-50,-60,-70],[1,2,3,4,5,6,7],[10,20,30,40,50,60,70] ];
+//queens
+directions[5] = directions[13] = directions[4].concat(directions[3]);
+//kings
+directions[6] = directions[14] = [[-11],[-10],[-9],[-1,-2],[1],[9],[10],[11],[1,2]];
+//check
+directions[7]=directions[6].concat(directions[2]);
+//black pawns
+directions[9] = [[-10,-20],[-9],[-11]]; 
 
 var history=[];
 
 
 const starting_position=[
-    1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
-    1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
-    1 ,'r','n','b','k','q','b','n','r', 1,
-    1 ,'p','p','p','p','p','p','p','p', 1,
-    1 , 0,  0 , 0 , 0 , 0 , 0 , 0,  0 , 1,
-    1 , 0,  0 , 0 , 0 , 0 , 0 , 0,  0 , 1,
-    1 , 0,  0 , 0 , 0 , 0 , 0 , 0,  0 , 1,
-    1 , 0,  0 , 0 , 0 , 0 , 0 , 0,  0 , 1,
-    1 ,'P','P','P','P','P','P','P','P', 1,
-    1 ,'R','N','B','K','Q','B','N','R', 1,
-    1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
-    1 , 1 , 1 , 1 , 1 , 1,  1 , 1 , 1 , 1,
+    -1 , -1 , -1 , -1 , -1 , -1,  -1 , -1 , -1 , -1,
+    -1 , -1 , -1 , -1 , -1 , -1,  -1 , -1 , -1 , -1,
+    -1 ,   4,  2,  3,  6,  5,  3,  2,  4  , -1,
+    -1 ,   1,  1,  1,  1,  1 , 1,  1,  1  , -1,
+    -1 ,   0,  0 , 0 , 0 , 0 , 0 , 0,  0  , -1,
+    -1 ,   0,  0 , 0 , 0 , 0 , 0 , 0,  0  , -1,
+    -1 ,   0,  0 , 0 , 0 , 0 , 0 , 0,  0  , -1,
+    -1 ,   0,  0 , 0 , 0 , 0 , 0 , 0,  0  , -1,
+    -1 ,   9,  9,  9,  9,  9,  9,  9,  9  , -1,
+    -1 ,   12, 10, 11, 14 ,13, 11, 10, 12 , -1,
+    -1 , -1 , -1 , -1 , -1 , -1,  -1 , -1 , -1 , -1,
+    -1 , -1 , -1 , -1 , -1 , -1,  -1 , -1 , -1 , -1,
     ];
 
 
@@ -86,11 +90,7 @@ board.set=function(old_board){
 }
 
 board.move=function(move){
-    //console.log(move);
-    
-    //this.moving_player=(this.moves.length%2==0 || this.moves.length==0) ?0:1;
-   
-    //console.log(board.valid_moves);
+
     if(this.valid_moves.includes(move)){
     
     var from=~~(move / 100);
@@ -110,11 +110,11 @@ board.move=function(move){
     this.position[to]=this.position[from];
     this.position[from]=0;
  
-    if(this.en_pasan && to===this.en_pasan && this.position[to]==='p') { 
+    if(this.en_pasan && to===this.en_pasan && this.position[to]===1) { 
         
         
             var attacked_pawn=this.moving_player?10:-10;
-            this.position[parseInt(to)+attacked_pawn]=0;    
+            this.position[to+attacked_pawn]=0;    
         }
     
     if(false){
@@ -124,31 +124,31 @@ board.move=function(move){
 
     this.en_pasan=false; 
 
-    if( from>30 && from<39 && to-from===20 && this.position[to]==='p' && (this.position[to-1]==='P' || this.position[to+1]==='P') ){
+    if( from>30 && from<39 && to-from===20 && this.position[to]===1 && (this.position[to-1]===9 || this.position[to+1]===9) ){
         this.en_pasan=to-10;
     }
 
-    if(from>80 && from<89 && from-to===20 && this.position[to]==='P' && (this.position[to-1]==='p' || this.position[to+1]==='p')){
+    if(from>80 && from<89 && from-to===20 && this.position[to]===9 && (this.position[to-1]===1 || this.position[to+1]===1)){
         this.en_pasan=to+10;
     }
 
     if(from===24 && to===22 && this.castling_rights[0][0]===true){
-        this.position[23]='r';
+        this.position[23]=4;
         this.position[21]=0;
     }
 
     if(from===24 && to===26 && this.castling_rights[0][0]===true){
-        this.position[25]='r';
+        this.position[25]=4;
         this.position[28]=0;
     }
 
     if(from===94 && to===92 && this.castling_rights[1][0]===true){
-        this.position[93]='R';
+        this.position[93]=12;
         this.position[91]=0;
     }
 
     if(from===94 && to===96 && this.castling_rights[1][0]===true){
-        this.position[95]='R';
+        this.position[95]=12;
         this.position[98]=0;
     }
 
@@ -165,20 +165,16 @@ board.move=function(move){
     else if( (from===91 || to===91) && board.castling_rights[1][0]===true ) {    this.castling_rights[1][0]=false;  } 
     else if( (from===98 || to===98) && board.castling_rights[1][1]===true ) {    this.castling_rights[1][1]=false;  }
     
-
-    //this.moves.push(move);                     //keep track of moves,
-    //this.moving_player= 1 - this.moving_player;     //change moving player
     this.moving_player^= 1;
     this.find_valid_moves();                        //find valid moves for next move
     /*
     if(this.valid_moves.length===0){ //Player has no valid move - checkmate or stalemate 
 
-        king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
+        king_square=(this.moving_player==0)?this.position.indexOf(6):this.position.indexOf(14);
         this.game_status=this.attacked_square(king_square,1-this.moving_player)? 1 - this.moving_player :3; //if our king is attacked its a checkmate 
 
     }*/
     
-
     return true;
 
    }else{
@@ -215,22 +211,20 @@ board.undo_move=function(){
 
 }
 
-
-
 board.find_piece_color=function(square){
-    if (this.position[square]==0 || this.position[square]==1  || typeof this.position[square]==='undefined'){ return 2; }
-    return (this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90)?1:0
+    if (this.position[square]===0 || this.position[square]===-1  || typeof this.position[square]==='undefined'){ return 2; }
+    return this.position[square]>8?1:0
 }
 
 board.attacked_square=function(square,attacking_player){
    
     var piece_color=1-attacking_player;
 
-    for(var m=0;m<directions['check'].length;m++) {  
+    for(var m=0;m<directions[7].length;m++) {  
 
-        for(var n=0;n<directions['check'][m].length;n++) {
+        for(var n=0;n<directions[7][m].length;n++) {
             
-            attack_check=square+directions['check'][m][n];
+            attack_check=square+directions[7][m][n];
 
             if (this.position[attack_check]==0) { continue; }
 
@@ -241,13 +235,13 @@ board.attacked_square=function(square,attacking_player){
             if( piece_color === attacking_piece_color ) { break; } //we found our own piece first
 
             if( //if we are here it means we found a piece of enemy in our path so we check if its one that can capture our king or not
-                ( (this.position[square+9]==='P' || this.position[square+11]==='P') && piece_color===0  )  || 
-                ( (this.position[square-9]==='p' || this.position[square-11]==='p') && piece_color===1  ) || 
-                (m<4 && ( (piece_color===0 && this.position[attack_check]==='R') || (piece_color===1 && this.position[attack_check]==='r') ) )|| 
-                (m>3 && m<8 && ( (piece_color===0 && this.position[attack_check]==='B') || (piece_color===1 && this.position[attack_check]==='b') ) ) ||
-                (m<8 && ( (piece_color===0 && this.position[attack_check]==='Q') || (piece_color===1 && this.position[attack_check]==='q') ) ) || 
-                (m>7 && ( (piece_color===0 && this.position[attack_check]==='N') || (piece_color===1 && this.position[attack_check]==='n') ) ) ||
-                (m<8 && n===0 && ( (this.position[attack_check]==='K' && piece_color===0 ) || (this.position[attack_check]==='k' && piece_color===1 ) ) )
+                ( (this.position[square+9]===9 || this.position[square+11]===9) && piece_color===0  )  || 
+                ( (this.position[square-9]===1 || this.position[square-11]===1) && piece_color===1  ) || 
+                (m<4 && ( (piece_color===0 && this.position[attack_check]===12) || (piece_color===1 && this.position[attack_check]===4) ) )|| 
+                (m>3 && m<8 && ( (piece_color===0 && this.position[attack_check]===11) || (piece_color===1 && this.position[attack_check]===3) ) ) ||
+                (m<8 && ( (piece_color===0 && this.position[attack_check]===13) || (piece_color===1 && this.position[attack_check]===5) ) ) || 
+                (m>7 && ( (piece_color===0 && this.position[attack_check]===10) || (piece_color===1 && this.position[attack_check]===2) ) ) ||
+                (m<8 && n===0 && ( (this.position[attack_check]===14 && piece_color===0 ) || (this.position[attack_check]===6 && piece_color===1 ) ) )
             ){ 
                 return true;
 
@@ -267,30 +261,29 @@ board.find_valid_moves=function(){
     
     this.valid_moves=[]; 
 
-
    for ( var square=21;square<99;square++){    // iterate all boards squares
 
-        if (this.position[square]==0 || this.position[square]==1 ) { continue; }     //if empty square or outside board continue
+        if (this.position[square]==0 || this.position[square]==-1 ) { continue; }     //if empty square or outside board continue
             
         var piece=this.position[square];
         var moving_piece_color= this.find_piece_color(square);
 
         if(moving_piece_color!=this.moving_player) { continue; }
-
+        
         for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
 
             for(var l=0;l<directions[piece][k].length;l++) {
+
+                target_square=square+directions[piece][k][l];
                 
-                target_square=parseInt(square)+parseInt(directions[piece][k][l]);
-                
-                if(this.position[target_square]==1 ) { break; }                          //target square is outside board
+                if(this.position[target_square]==-1 ) { break; }                          //target square is outside board
 
                 target_piece_color=this.find_piece_color(target_square);
 
                 if( moving_piece_color === target_piece_color ) { break; }               //target square is occupied by friendly piece
                 
-                if (piece==='p' || piece==='P'){                                         //pawn rules
-
+                if (piece===1 || piece===9){                                         //pawn rules
+                    
                     //cannot capture in empty squares unless its an en pasan square
                     if( (square-target_square)%10!==0 && this.position[target_square]==0 && target_square!==this.en_pasan ){ continue; } 
                     
@@ -298,16 +291,16 @@ board.find_valid_moves=function(){
                     if( (square-target_square)%10==0 && this.position[target_square]!=0 ){ break; }    
                     
                     //if pawns are not in the first row they cannot move two squares
-                    if( ( (piece==='p' && square>40 ) || (piece==='P' && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } 
+                    if( ( (piece===1 && square>40 ) || (piece===9 && square<81 ) ) && Math.abs(directions[piece][k][l])===20 ){ break; } 
                     
                    //if(this.en_pasan && target_square===this.en_pasan){ /*target_square+='_';*/} //en pasan
 
                     //auto promote to queen
-                   // if (piece==='p' && target_square>90) { target_square+='q'; } if (piece==='P' && target_square<29 ) { target_square+='Q'; } //auto promote to queen
+                   // if (piece===1 && target_square>90) { target_square+=5; } if (piece===9 && target_square<29 ) { target_square+=13; } //auto promote to queen
                     
                 }
                 
-                    if(piece==='k' || piece==='K'){ 
+                    if(piece===6 || piece===14){ 
                         
                         //king side castle 
                         if( directions[piece][k][l]==-2 &&                              //  if castle is attempted 
@@ -330,14 +323,14 @@ board.find_valid_moves=function(){
                     
                     //we make the move temporarily to check if king is captured 
                     
-                    var old_target=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=this.position[square];
+                    var old_target=this.position[target_square];
+                    this.position[target_square]=this.position[square];
                     this.position[square]=0;
                     
                     // en passant temporary fix
                     if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=0; }
 
-                    var king_square=(this.moving_player==0)?this.position.indexOf('k'):this.position.indexOf('K');
+                    var king_square=(this.moving_player==0)?this.position.indexOf(6):this.position.indexOf(14);
 
                     //check if king is captured
                     
@@ -345,10 +338,10 @@ board.find_valid_moves=function(){
 
                     //undo the move
                     
-                    this.position[square]=this.position[parseInt(target_square)];
-                    this.position[parseInt(target_square)]=old_target;
+                    this.position[square]=this.position[target_square];
+                    this.position[target_square]=old_target;
                     // en passant temporary fix
-                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?'P':'p'; }
+                    if(typeof target_square==='string' && parseInt(target_square)===this.en_pasan){ var attacked_pawn=this.moving_player?10:-10;this.position[parseInt(target_square)+attacked_pawn]=this.moving_player?9:1; }
                     
                 if(!king_capture_found){
                     this.valid_moves.push(square*100+target_square)
@@ -368,6 +361,7 @@ board.find_valid_moves=function(){
     //console.log(this.valid_moves);
 
 }
+
 }
 
 
@@ -392,9 +386,7 @@ board.find_best_move=function(){
         var worker = new Worker('worker.js');
 
         worker.addEventListener('message', function (e) {
-
-        //console.log(e.data);
-        
+ 
         board.total_evaluations+=e.data.nodes;
         
 
@@ -429,7 +421,6 @@ board.find_best_move=function(){
 
 
 self.addEventListener('message', function(e) {
-
     board.initialize();
     board.set(JSON.parse(e.data));
     board.find_best_move();
@@ -437,4 +428,5 @@ self.addEventListener('message', function(e) {
   }, false);
 
 board.initialize();
+
 
