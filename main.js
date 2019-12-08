@@ -1,5 +1,5 @@
 
-var piece_values = { 1:10, 9: 10, 2:30 ,10: 30, 3:30, 11: 30, 4:50, 12: 50, 5: 90, 13:90, 6:1000, 14: 1000 }
+var piece_values =[0,10,30,30,50,90,2000,0,0,-10,-30,-30,-50,-90,-2000];
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
@@ -421,6 +421,73 @@ board.find_best_move=function(){
     return best_move;
 }
 
+board.evaluate_board=function(){
+
+    //var center_squares=[[54,55,64,65],[44,45,74,75,53,56,63,66]];
+
+    var evaluation=0;
+   /* var attacking_squares=[];
+    attacking_squares[0]=[];
+    attacking_squares[1]=[];
+*/
+    for ( var square=21;square<99;square++){    // iterate all boards squares
+
+        
+        if (board.position[square]<1 ) { continue; }
+        
+        var piece=board.position[square];
+        //var attacking_piece_color= this.position[square]>>3;
+
+            evaluation+=piece_values[piece];
+          //  console.log('-'+' '+piece+' '+piece_values[piece])
+        
+        /*
+        for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
+
+            if( (piece===1 || piece===9) && k===0) continue;
+
+            for(var l=0;l<directions[piece][k].length;l++) {
+
+                attacked_square=square+directions[piece][k][l];
+                attacked_piece_color=this.position[attacked_square]>>3;
+
+                if(this.position[attacked_square]==1 ) { break; }  
+
+                if( attacking_piece_color === attacked_piece_color ) { break; }  
+
+                attacking_squares[attacking_piece_color].push(attacked_square);
+
+                if( attacking_piece_color===0  )
+                { 
+                    evaluation+=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
+                }
+                else
+                {
+                    evaluation-=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
+                }
+
+                }
+        
+            }*/
+
+            
+        }
+/*
+            if(board.position[22]===2) evaluation-=2;
+            if(board.position[23]===3) evaluation-=2;
+            if(board.position[26]===3) evaluation-=2;
+            if(board.position[27]===2) evaluation-=2;
+
+            if(board.position[92]===10) evaluation+=2;
+            if(board.position[93]===11) evaluation+=2;
+            if(board.position[96]===11) evaluation+=2;
+            if(board.position[97]===10) evaluation+=2;
+        */
+
+    return evaluation;
+        
+
+}
 
 self.addEventListener('message', function(e) {
     board.initialize();

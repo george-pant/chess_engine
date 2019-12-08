@@ -1,4 +1,4 @@
-var piece_values = { 1:10, 9: 10, 2:30 ,10: 30, 3:30, 11: 30, 4:50, 12: 50, 5: 90, 13:90, 6:1000, 14: 1000 }
+var piece_values =[0,10,30,30,50,90,2000,0,0,-10,-30,-30,-50,-90,-2000];
 
 //direction each piece can move Only pawn have different based on color
 var directions  = [];
@@ -66,7 +66,7 @@ board.set=function(old_board){
     this.castling_rights=old_board.castling_rights;
     this.piece_evaluation=0;
     this.positional_evaluation=0
-    this.find_valid_moves();
+   // this.find_valid_moves();
 }
 
 board.move=function(move){
@@ -83,6 +83,7 @@ board.move=function(move){
         {
             position:this.position.slice(),
             castling_rights:this.castling_rights.slice(),
+            en_pasan:this.en_pasan
             //moves:this.moves.slice()
             
         }); 
@@ -91,11 +92,11 @@ board.move=function(move){
     this.position[to]=this.position[from];
     this.position[from]=0;
  
-    if(this.en_pasan && to===this.en_pasan && this.position[to]===1) { 
-        
+    if(this.en_pasan!==false && to===this.en_pasan && this.position[to]===1) { 
         
             var attacked_pawn=this.moving_player?10:-10;
-            this.position[parseInt(to)+attacked_pawn]=0;    
+            this.position[to+attacked_pawn]=0;    
+
         }
     
     if(false){
@@ -148,7 +149,7 @@ board.move=function(move){
     
 
     this.moving_player^= 1;
-    this.find_valid_moves();                        //find valid moves for next move
+    //.find_valid_moves();                        //find valid moves for next move
 
     return true;
 
@@ -167,7 +168,7 @@ board.undo_move=function(){
     this.en_pasan=previous.en_pasan;
     this.moving_player^= 1;
 
-    this.find_valid_moves();
+    //this.find_valid_moves();
 
 }
 
@@ -302,102 +303,50 @@ board.find_valid_moves=function(){
 }
 
 board.evaluate_board=function(){
-
-    var center_squares=[[54,55,64,65],[44,45,74,75,53,56,63,66]];
-
+    
     var evaluation=0;
-    var attacking_squares=[];
-    attacking_squares[0]=[];
-    attacking_squares[1]=[];
-/*
+
     for ( var square=21;square<99;square++){    // iterate all boards squares
 
+        if (board.position[square]<1 ) { continue; }
         
-        if (this.position[square]==0 || this.position[square]==1 ) { continue; }
-        
-        var piece=this.position[square];
-        var attacking_piece_color= this.find_piece_color(square);
-
-        
-        if( this.position[square].charCodeAt(0) >= 65 && this.position[square].charCodeAt(0) <= 90) { 
-            evaluation-=piece_values[piece];
-        }
-        else
-        {
-            evaluation+=piece_values[piece];
-        }
-
-        /*
-        for(var k=0;k<directions[piece].length;k++) {                                //if piece in the square find all possible moves for this piece
-
-            if( (piece==='p' || piece==='P') && k===0) continue;
-
-            for(var l=0;l<directions[piece][k].length;l++) {
-
-                attacked_square=parseInt(square)+parseInt(directions[piece][k][l]);
-                attacked_piece_color=this.find_piece_color(attacked_square);
-
-                if(this.position[attacked_square]==1 ) { break; }  
-
-                if( attacking_piece_color === attacked_piece_color ) { break; }  
-
-                attacking_squares[attacking_piece_color].push(attacked_square);
-
-                if( attacking_piece_color===0  )
-                { 
-                    evaluation+=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
-                }
-                else
-                {
-                    evaluation-=center_squares[0].includes(attacked_square)?1:center_squares[1].includes(attacked_square)?0.5:0;
-                }
-
-                }
-        
-            }*/
-
+            evaluation+=piece_values[board.position[square]];
             
+        }
 
+            if(board.position[22]===2) evaluation-=2;
+            if(board.position[23]===3) evaluation-=2;
+            if(board.position[26]===3) evaluation-=2;
+            if(board.position[27]===2) evaluation-=2;
+
+            if(board.position[92]===10) evaluation+=2;
+            if(board.position[93]===11) evaluation+=2;
+            if(board.position[96]===11) evaluation+=2;
+            if(board.position[97]===10) evaluation+=2;
         
-
-        //if(board.moves.length<12){
-           
-            if(board.position[22]==='n') evaluation-=10;
-            if(board.position[23]==='b') evaluation-=10;
-            if(board.position[26]==='b') evaluation-=10;
-            if(board.position[27]==='n') evaluation-=10;
-
-            if(board.position[92]==='N') evaluation+=10;
-            if(board.position[93]==='B') evaluation+=10;
-            if(board.position[96]==='B') evaluation+=10;
-            if(board.position[97]==='N') evaluation+=10;
-
-
-        //}
-
     return evaluation;
-
+        
 
 }
 
 board.minmax=function(depth,alpha,beta,isMax){
 
-    var best_move=0;
-    
     if(depth===0){
-        this.total_evaluations++;
-        return this.evaluate_board();
+        board.total_evaluations++;
+        return board.evaluate_board();
     }
-
+ 
     if(isMax){
 
-        best_move=-9999;   
+        var best_move=-9999;   
+        board.find_valid_moves();
 
             for (var h=0;h<board.valid_moves.length;h++){
 
-                this.move(board.valid_moves[h]);
-                best_move=Math.max(best_move, board.minmax(depth - 1, alpha, beta, !isMax));
-                this.undo_move();
+                board.move(board.valid_moves[h]);
+                var minmax_eval=board.minmax(depth - 1, alpha, beta, !isMax);
+                best_move=best_move>minmax_eval?best_move:minmax_eval;
+                board.undo_move();
 
                 alpha = alpha>best_move?alpha:best_move;
 
@@ -410,13 +359,15 @@ board.minmax=function(depth,alpha,beta,isMax){
 
     }else{
 
-        best_move=9999; 
+        var best_move=9999; 
+        board.find_valid_moves();
 
         for (var h=0;h<board.valid_moves.length;h++){
                 
-                this.move(board.valid_moves[h]);
-                best_move=Math.min(best_move, board.minmax(depth - 1, alpha, beta,  !isMax));
-                this.undo_move();
+                board.move(board.valid_moves[h]);
+                var minmax_eval=board.minmax(depth - 1, alpha, beta,  !isMax);
+                best_move=best_move<minmax_eval?best_move:minmax_eval;
+                board.undo_move();
 
                 beta = beta<best_move?beta:best_move
 
@@ -426,9 +377,9 @@ board.minmax=function(depth,alpha,beta,isMax){
 
             }
 
-        return best_move;
-
     }
+
+    return best_move;
 
 }
 
@@ -437,7 +388,8 @@ board.minmax=function(depth,alpha,beta,isMax){
 self.addEventListener('message', function(e) {
 
     board.set(JSON.parse(e.data.board));
-    var evaluation=board.minmax(8,-9999,9999,true);
+    var evaluation=board.minmax(5,-9999,9999,true);
+    console.log({'move':e.data.move,'evaluation':evaluation,'nodes':board.total_evaluations});
     self.postMessage({'move':e.data.move,'evaluation':evaluation,'nodes':board.total_evaluations});
     self.close();
 
