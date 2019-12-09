@@ -46,7 +46,7 @@ board.total_evaluations=0;
 board.evaluations_per_second=0;
 board.game_status=2                     //0 if white won 1 for black 2 for game in progress 3 for stalemate
 board.moving_player=0                   //0 for white player 1 for black
-//board.moves=[];                         //game moves
+board.moves=0;                         //game moves
 board.en_pasan=false;                   //en pasan square
 board.valid_moves=[];                   //possible valid moves
 board.position=[];
@@ -58,7 +58,7 @@ board.positional_evaluation=0;
 board.set=function(old_board){
     this.game_status=old_board.game_status; 
     this.moving_player=old_board.moving_player;                   //0 for white player 1 for black
-    //this.moves=old_board.moves;                         //game moves
+    this.moves=old_board.moves;                         //game moves
     this.en_pasan=old_board.en_pasan;
     this.valid_moves=old_board.valid_moves;                   //possible valid moves
     this.position=old_board.position.concat();
@@ -66,7 +66,6 @@ board.set=function(old_board){
     this.castling_rights=old_board.castling_rights;
     this.piece_evaluation=0;
     this.positional_evaluation=0
-   // this.find_valid_moves();
 }
 
 board.move=function(move){
@@ -83,9 +82,7 @@ board.move=function(move){
         {
             position:this.position.slice(),
             castling_rights:this.castling_rights.slice(),
-            en_pasan:this.en_pasan
-            //moves:this.moves.slice()
-            
+            en_pasan:this.en_pasan         
         }); 
 
     //make the move in board
@@ -149,7 +146,7 @@ board.move=function(move){
     
 
     this.moving_player^= 1;
-    //.find_valid_moves();                        //find valid moves for next move
+    this.moves++;
 
     return true;
 
@@ -167,8 +164,7 @@ board.undo_move=function(){
     this.castling_rights=previous.castling_rights;
     this.en_pasan=previous.en_pasan;
     this.moving_player^= 1;
-
-    //this.find_valid_moves();
+    this.moves--;
 
 }
 
@@ -303,32 +299,25 @@ board.find_valid_moves=function(){
 }
 
 board.evaluate_board=function(){
-    
+
     var evaluation=0;
 
     for ( var square=21;square<99;square++){    // iterate all boards squares
 
+        
         if (board.position[square]<1 ) { continue; }
         
-            evaluation+=piece_values[board.position[square]];
+        var piece=board.position[square];
+            evaluation+=piece_values[piece];
             
         }
 
-            if(board.position[22]===2) evaluation-=2;
-            if(board.position[23]===3) evaluation-=2;
-            if(board.position[26]===3) evaluation-=2;
-            if(board.position[27]===2) evaluation-=2;
-
-            if(board.position[92]===10) evaluation+=2;
-            if(board.position[93]===11) evaluation+=2;
-            if(board.position[96]===11) evaluation+=2;
-            if(board.position[97]===10) evaluation+=2;
-        
     return evaluation;
         
 
 }
 
+var all_moves='';
 board.minmax=function(depth,alpha,beta,isMax){
 
     if(depth===0){
@@ -344,17 +333,18 @@ board.minmax=function(depth,alpha,beta,isMax){
             for (var h=0;h<board.valid_moves.length;h++){
 
                 board.move(board.valid_moves[h]);
-                var minmax_eval=board.minmax(depth - 1, alpha, beta, !isMax);
-                best_move=best_move>minmax_eval?best_move:minmax_eval;
+                all_moves+=' '+board.valid_moves[h];
+
+                best_move=Math.max(best_move,board.minmax(depth - 1, alpha, beta, false));
                 board.undo_move();
 
                 alpha = alpha>best_move?alpha:best_move;
-
+/*
                 if (beta <= alpha) {
                    return best_move;
-                }
+                }*/
             }
-
+        console.log(all_moves);
         return best_move;
 
     }else{
@@ -365,21 +355,23 @@ board.minmax=function(depth,alpha,beta,isMax){
         for (var h=0;h<board.valid_moves.length;h++){
                 
                 board.move(board.valid_moves[h]);
-                var minmax_eval=board.minmax(depth - 1, alpha, beta,  !isMax);
-                best_move=best_move<minmax_eval?best_move:minmax_eval;
+                all_moves+=' '+board.valid_moves[h];
+
+                best_move=Math.min(best_move,board.minmax(depth - 1, alpha, beta,  true));
                 board.undo_move();
 
                 beta = beta<best_move?beta:best_move
-
+/*
                 if (beta <= alpha) {
                    return best_move;
-                }
+                }*/
 
             }
 
+            return best_move;
+
     }
 
-    return best_move;
 
 }
 
@@ -388,7 +380,7 @@ board.minmax=function(depth,alpha,beta,isMax){
 self.addEventListener('message', function(e) {
 
     board.set(JSON.parse(e.data.board));
-    var evaluation=board.minmax(5,-9999,9999,true);
+    var evaluation=board.minmax(1,-9999,9999,true);
     console.log({'move':e.data.move,'evaluation':evaluation,'nodes':board.total_evaluations});
     self.postMessage({'move':e.data.move,'evaluation':evaluation,'nodes':board.total_evaluations});
     self.close();
